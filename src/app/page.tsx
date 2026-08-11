@@ -82,12 +82,12 @@ export default async function Home() {
       <SiteHeader />
 
       <main className="flex-1">
-        <section className="border-b border-neutral-200 bg-white">
+        <section className="border-b border-neutral-200 bg-neutral-100">
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-6 py-20">
-            <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+            <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight text-neutral-900 sm:text-5xl">
               Find the exact finish you&apos;re picturing.
             </h1>
-            <p className="max-w-xl text-lg text-neutral-500">
+            <p className="max-w-xl text-lg text-neutral-600">
               Material Hub connects manufacturers with architects and designers —
               search visually, build mood boards, and enquire directly.
             </p>
@@ -101,11 +101,11 @@ export default async function Home() {
                 type="text"
                 name="q"
                 placeholder="light oak texture, office"
-                className="flex-1 rounded-full border border-neutral-300 px-5 py-3 text-sm focus:border-neutral-900 focus:outline-none"
+                className="flex-1 rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm focus:border-terracotta-500 focus:outline-none"
               />
               <button
                 type="submit"
-                className="rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+                className="rounded-full bg-terracotta-500 px-6 py-3 text-sm font-medium text-white hover:bg-terracotta-600"
               >
                 Search
               </button>
@@ -115,13 +115,13 @@ export default async function Home() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/catalog"
-                className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium hover:border-neutral-400"
+                className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-700 hover:border-neutral-400"
               >
                 Browse the catalog
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium hover:border-neutral-400"
+                className="rounded-full border border-terracotta-300 px-6 py-3 text-sm font-medium text-terracotta-700 hover:border-terracotta-500 hover:bg-terracotta-50"
               >
                 List your products
               </Link>
@@ -138,7 +138,7 @@ export default async function Home() {
               <Link
                 key={finish}
                 href={`/catalog?finish=${encodeURIComponent(finish)}`}
-                className="group overflow-hidden rounded-xl border border-neutral-200 bg-white"
+                className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-terracotta-400"
               >
                 <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
                   {imageUrl && (
@@ -168,13 +168,13 @@ export default async function Home() {
               <Link
                 key={card.role}
                 href={hrefForRole(card.role)}
-                className="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 transition hover:border-neutral-900"
+                className="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 transition hover:border-terracotta-400 hover:shadow-sm"
               >
                 <div>
                   <p className="font-medium text-neutral-900">{card.label}</p>
                   <p className="mt-1.5 text-sm text-neutral-500">{card.description}</p>
                 </div>
-                <span className="mt-4 text-sm font-medium text-neutral-900">
+                <span className="mt-4 text-sm font-medium text-terracotta-600">
                   Get started →
                 </span>
               </Link>
@@ -191,7 +191,7 @@ export default async function Home() {
               <Link
                 key={c}
                 href={`/catalog?category=${encodeURIComponent(c)}`}
-                className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-900 hover:text-neutral-900"
+                className="rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600"
               >
                 {c}
               </Link>

@@ -94,7 +94,7 @@ export default async function ManufacturerDashboard() {
                       </select>
                       <button
                         type="submit"
-                        className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-neutral-500"
+                        className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
                       >
                         Save
                       </button>
@@ -152,7 +152,7 @@ export default async function ManufacturerDashboard() {
               />
               <button
                 type="submit"
-                className="mt-1 rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+                className="mt-1 rounded-lg bg-terracotta-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-terracotta-600"
               >
                 Add product
               </button>

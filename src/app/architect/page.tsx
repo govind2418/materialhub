@@ -49,7 +49,7 @@ export default async function ArchitectDashboard() {
         <section className="mt-10">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">My Mood Board</h2>
-            <Link href="/catalog" className="text-sm font-medium text-neutral-500 hover:text-neutral-900">
+            <Link href="/catalog" className="text-sm font-medium text-terracotta-600 hover:text-terracotta-700">
               Browse catalog →
             </Link>
           </div>
@@ -98,7 +98,7 @@ export default async function ArchitectDashboard() {
                     </p>
                     {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
                   </div>
-                  <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+                  <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
                     {e.status}
                   </span>
                 </div>

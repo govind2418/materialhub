@@ -154,10 +154,10 @@ function FilterPill({
       href={href}
       className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
         active
-          ? "border-neutral-900 bg-neutral-900 text-white"
+          ? "border-terracotta-500 bg-terracotta-500 text-white"
           : subtle
-            ? "border-neutral-200 text-neutral-500 hover:border-neutral-400"
-            : "border-neutral-300 text-neutral-700 hover:border-neutral-400"
+            ? "border-neutral-200 bg-white text-neutral-500 hover:border-terracotta-300 hover:text-terracotta-600"
+            : "border-neutral-300 bg-white text-neutral-700 hover:border-terracotta-300 hover:text-terracotta-600"
       }`}
     >
       {label}

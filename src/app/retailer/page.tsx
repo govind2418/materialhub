@@ -45,7 +45,7 @@ export default async function RetailerDashboard() {
                   <input type="hidden" name="productId" value={p.id} />
                   <button
                     type="submit"
-                    className="w-full rounded-lg border border-neutral-900 px-3 py-1.5 text-xs font-medium hover:bg-neutral-900 hover:text-white"
+                    className="w-full rounded-lg border border-terracotta-500 px-3 py-1.5 text-xs font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
                   >
                     Request restock
                   </button>
@@ -71,7 +71,7 @@ export default async function RetailerDashboard() {
                     </p>
                     {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
                   </div>
-                  <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+                  <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
                     {e.status}
                   </span>
                 </div>

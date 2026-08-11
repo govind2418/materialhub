@@ -17,9 +17,9 @@ export async function SiteHeader() {
   const dashboardHref = dbUser ? DASHBOARD_BY_ROLE[dbUser.role] ?? "/onboarding" : "/onboarding";
 
   return (
-    <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
+        <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-neutral-900">
           Material Hub
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-neutral-600">
@@ -42,7 +42,7 @@ export async function SiteHeader() {
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-full bg-neutral-900 px-4 py-2 text-white hover:bg-neutral-800"
+                className="rounded-full bg-terracotta-500 px-4 py-2 text-white hover:bg-terracotta-600"
               >
                 Get started
               </Link>

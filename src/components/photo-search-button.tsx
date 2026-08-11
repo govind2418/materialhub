@@ -11,7 +11,7 @@ export function PhotoSearchButton() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Search by photo"
-        className="flex h-full items-center gap-2 rounded-full border border-neutral-300 px-4 py-3 text-sm font-medium text-neutral-700 hover:border-neutral-400"
+        className="flex h-full items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

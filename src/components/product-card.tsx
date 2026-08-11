@@ -17,7 +17,7 @@ export function ProductCard({
   return (
     <Link
       href={`/catalog/${slug}`}
-      className="group block overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:shadow-md"
+      className="group block overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-terracotta-300 hover:shadow-md"
     >
       <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
         <Image

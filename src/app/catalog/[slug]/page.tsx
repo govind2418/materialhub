@@ -77,7 +77,7 @@ export default async function ProductDetailPage({
                 <form action={addAction}>
                   <button
                     type="submit"
-                    className="w-full rounded-lg border border-neutral-900 px-4 py-2.5 text-sm font-medium hover:bg-neutral-900 hover:text-white"
+                    className="w-full rounded-lg border border-terracotta-500 px-4 py-2.5 text-sm font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
                   >
                     Add to Mood Board
                   </button>
@@ -89,11 +89,11 @@ export default async function ProductDetailPage({
                     name="message"
                     placeholder={`Ask ${manufacturer?.name} about pricing, samples, or lead time...`}
                     rows={3}
-                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+                    className="w-full rounded-lg bg-terracotta-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-terracotta-600"
                   >
                     Send Enquiry
                   </button>
@@ -106,7 +106,7 @@ export default async function ProductDetailPage({
             ) : (
               <Link
                 href="/sign-in"
-                className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-neutral-800"
+                className="w-full rounded-lg bg-terracotta-500 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-terracotta-600"
               >
                 Sign in to enquire
               </Link>

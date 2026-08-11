@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf7f2;
+  --foreground: #2b221c;
+}
+
+@theme {
+  /* Warm walnut neutral scale (replaces Tailwind's default gray/neutral) */
+  --color-neutral-50: #faf7f2;
+  --color-neutral-100: #f3ede3;
+  --color-neutral-200: #e8dfd3;
+  --color-neutral-300: #d9cbb8;
+  --color-neutral-400: #b8a68f;
+  --color-neutral-500: #8a7864;
+  --color-neutral-600: #6b5d4f;
+  --color-neutral-700: #4f4136;
+  --color-neutral-800: #3a2f27;
+  --color-neutral-900: #2b221c;
+  --color-neutral-950: #1c1611;
+
+  /* Burnt terracotta accent scale */
+  --color-terracotta-50: #fbede8;
+  --color-terracotta-100: #f5d5c9;
+  --color-terracotta-200: #eab8a2;
+  --color-terracotta-300: #dc9377;
+  --color-terracotta-400: #c97456;
+  --color-terracotta-500: #b5563c;
+  --color-terracotta-600: #99432c;
+  --color-terracotta-700: #7a3423;
+  --color-terracotta-800: #5c281b;
+  --color-terracotta-900: #4a1f15;
+
+  --font-sans: var(--font-geist-sans);
+  --font-serif: var(--font-fraunces);
+  --font-mono: var(--font-geist-mono);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif), Georgia, serif;
+  letter-spacing: -0.01em;
 }

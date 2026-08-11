@@ -67,7 +67,7 @@ export default async function DistributorDashboard() {
                   </select>
                   <button
                     type="submit"
-                    className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-neutral-500"
+                    className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
                   >
                     Save
                   </button>

@@ -45,7 +45,7 @@ export default async function OnboardingPage({
           {ROLE_OPTIONS.map((r) => (
             <label
               key={r.value}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 px-4 py-3 has-[:checked]:border-neutral-900 has-[:checked]:bg-neutral-900 has-[:checked]:text-white"
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-3 has-[:checked]:border-terracotta-500 has-[:checked]:bg-terracotta-500 has-[:checked]:text-white"
             >
               <input
                 type="radio"
@@ -64,30 +64,30 @@ export default async function OnboardingPage({
           name="name"
           placeholder="Your full name"
           required
-          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm"
+          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm focus:border-terracotta-500 focus:outline-none"
         />
         <input
           name="companyName"
           placeholder="Company / studio name"
           required
-          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm"
+          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm focus:border-terracotta-500 focus:outline-none"
         />
         <div className="grid grid-cols-2 gap-3">
           <input
             name="city"
             placeholder="City"
-            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm"
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm focus:border-terracotta-500 focus:outline-none"
           />
           <input
             name="phone"
             placeholder="Phone"
-            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm"
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm focus:border-terracotta-500 focus:outline-none"
           />
         </div>
 
         <button
           type="submit"
-          className="mt-2 rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+          className="mt-2 rounded-lg bg-terracotta-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-terracotta-600"
         >
           Continue
         </button>
