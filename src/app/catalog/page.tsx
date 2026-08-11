@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/db";
-import { ProductCard } from "@/components/product-card";
+import { SelectableProductGrid } from "@/components/selectable-product-grid";
 import { SiteHeader } from "@/components/site-header";
 
 type CatalogSearchParams = {
@@ -120,18 +120,21 @@ export default async function CatalogPage({
             No products match these filters yet.
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((p) => (
-              <ProductCard
-                key={p.id}
-                slug={p.slug}
-                name={p.name}
-                code={p.code}
-                imageUrl={p.imageUrl}
-                collection={p.collection}
-              />
-            ))}
-          </div>
+          <>
+            <p className="mb-3 text-xs text-neutral-400">
+              Tap the checkmark on a product to select it for comparison (2-4 products).
+            </p>
+            <SelectableProductGrid
+              products={filtered.map((p) => ({
+                id: p.id,
+                slug: p.slug,
+                name: p.name,
+                code: p.code,
+                imageUrl: p.imageUrl,
+                collection: p.collection,
+              }))}
+            />
+          </>
         )}
       </div>
     </div>

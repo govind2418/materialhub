@@ -37,7 +37,7 @@ export default async function OnboardingPage({
     <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
       <h1 className="text-2xl font-semibold">Tell us who you are</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        This sets up your workspace on Material Hub.
+        This sets up your workspace on MaterialOS.
       </p>
 
       <form action={completeOnboarding} className="mt-8 flex flex-col gap-4">

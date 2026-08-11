@@ -20,7 +20,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Material Hub",
+  title: "MaterialOS",
   description: "Discover, source, and connect with material manufacturers.",
 };
 

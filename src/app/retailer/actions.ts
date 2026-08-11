@@ -23,6 +23,7 @@ export async function requestRestock(formData: FormData): Promise<void> {
       architectUserId: user.id,
       manufacturerId: product.manufacturerId,
       message: `Restock request for ${product.name}${product.code ? ` (${product.code})` : ""}.`,
+      type: "restock",
     })
     .returning();
 

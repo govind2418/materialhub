@@ -5,7 +5,13 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { db } from "@/db";
-import { products, enquiries } from "@/db/schema";
+import {
+  products,
+  enquiries,
+  relatedProducts,
+  productDistributors,
+  manufacturerTeamMembers,
+} from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 async function getOwnedManufacturer(userId: string) {
@@ -31,6 +37,11 @@ export async function createProduct(formData: FormData): Promise<void> {
   const panelSizes = panelSizesRaw
     ? panelSizesRaw.split(",").map((s) => s.trim()).filter(Boolean)
     : null;
+  const certificationsRaw = String(formData.get("certifications") ?? "");
+  const certifications = certificationsRaw
+    ? certificationsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    : null;
+  const installationGuideUrl = String(formData.get("installationGuideUrl") ?? "") || null;
 
   const file = formData.get("image") as File | null;
   let imageUrl = "/products/placeholder.png";
@@ -58,8 +69,50 @@ export async function createProduct(formData: FormData): Promise<void> {
     finish,
     panelSizes,
     imageUrl,
+    certifications,
+    installationGuideUrl,
   });
 
+  revalidatePath("/manufacturer");
+}
+
+export async function linkRelatedProduct(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const productId = String(formData.get("productId"));
+  const relatedProductId = String(formData.get("relatedProductId"));
+  if (!relatedProductId || productId === relatedProductId) return;
+
+  const product = await db.query.products.findFirst({
+    where: (p, { eq }) => eq(p.id, productId),
+  });
+  if (!product || product.manufacturerId !== manufacturer.id) return;
+
+  await db.insert(relatedProducts).values({ productId, relatedProductId });
+  revalidatePath("/manufacturer");
+}
+
+export async function assignDistributor(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const productId = String(formData.get("productId"));
+  const distributorUserId = String(formData.get("distributorUserId"));
+  if (!distributorUserId) return;
+
+  const product = await db.query.products.findFirst({
+    where: (p, { eq }) => eq(p.id, productId),
+  });
+  if (!product || product.manufacturerId !== manufacturer.id) return;
+
+  await db.insert(productDistributors).values({ productId, distributorUserId });
   revalidatePath("/manufacturer");
 }
 
@@ -77,6 +130,51 @@ export async function deleteProduct(formData: FormData) {
   if (!product || product.manufacturerId !== manufacturer.id) return;
 
   await db.delete(products).where(eq(products.id, productId));
+  revalidatePath("/manufacturer");
+}
+
+export async function inviteTeamMember(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const role = String(formData.get("role")) as "distributor" | "sales_rep";
+  if (!email || !role) return;
+
+  const existingUser = await db.query.users.findFirst({
+    where: (u, { and, eq }) => and(eq(u.email, email), eq(u.role, role)),
+  });
+
+  await db.insert(manufacturerTeamMembers).values({
+    manufacturerId: manufacturer.id,
+    email,
+    role,
+    userId: existingUser?.id,
+    status: existingUser ? "active" : "invited",
+  });
+
+  revalidatePath("/manufacturer");
+}
+
+export async function removeTeamMember(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const memberId = String(formData.get("memberId"));
+  const member = await db.query.manufacturerTeamMembers.findFirst({
+    where: (m, { eq }) => eq(m.id, memberId),
+  });
+  if (!member || member.manufacturerId !== manufacturer.id) return;
+
+  await db
+    .delete(manufacturerTeamMembers)
+    .where(eq(manufacturerTeamMembers.id, memberId));
   revalidatePath("/manufacturer");
 }
 

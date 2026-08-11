@@ -2,8 +2,9 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { manufacturers, users } from "@/db/schema";
+import { manufacturers, manufacturerTeamMembers, users } from "@/db/schema";
 
 export async function completeOnboarding(formData: FormData) {
   const { userId } = await auth();
@@ -51,6 +52,18 @@ export async function completeOnboarding(formData: FormData) {
       .onConflictDoNothing({ target: manufacturers.slug });
 
     if (role === "manufacturer") redirect("/manufacturer");
+  }
+
+  if (role === "distributor" || role === "sales_rep") {
+    const pendingInvites = await db.query.manufacturerTeamMembers.findMany({
+      where: (m, { and, eq }) => and(eq(m.email, email), eq(m.role, role)),
+    });
+    for (const invite of pendingInvites) {
+      await db
+        .update(manufacturerTeamMembers)
+        .set({ userId: user.id, status: "active" })
+        .where(eq(manufacturerTeamMembers.id, invite.id));
+    }
   }
 
   const dashboardByRole: Record<string, string> = {

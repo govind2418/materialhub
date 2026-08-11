@@ -43,6 +43,7 @@ export default async function ProductDetailPage({
     ["Weight per panel", product.weightPerPanel],
     ["Flexibility", product.flexibility],
     ["Panel sizes", product.panelSizes?.join(", ") ?? null],
+    ["Certifications", product.certifications?.join(", ") ?? null],
   ];
 
   async function addAction() {
@@ -77,6 +78,17 @@ export default async function ProductDetailPage({
                 </div>
               ))}
           </dl>
+
+          {product.installationGuideUrl && (
+            <a
+              href={product.installationGuideUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-sm font-medium text-terracotta-600 hover:text-terracotta-700"
+            >
+              Installation guide ↗
+            </a>
+          )}
 
           <div className="mt-6 flex flex-col gap-3">
             {isArchitect ? (

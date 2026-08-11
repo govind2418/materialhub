@@ -3,8 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { db } from "@/db";
-import { enquiries, enquiryItems, moodBoardItems } from "@/db/schema";
+import { enquiries, enquiryItems, moodBoardItems, projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export async function createProject(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "architect") return;
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return;
+
+  await db.insert(projects).values({ architectUserId: user.id, name });
+  revalidatePath("/architect");
+}
 
 export async function removeFromMoodBoard(formData: FormData) {
   const user = await getCurrentDbUser();
@@ -31,13 +42,14 @@ export async function sendBoardEnquiry(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
   if (!user || user.role !== "architect") return;
 
+  const moodBoardId = String(formData.get("moodBoardId"));
   const manufacturerId = String(formData.get("manufacturerId"));
   const message = String(formData.get("message") ?? "");
 
   const board = await db.query.moodBoards.findFirst({
-    where: (b, { eq }) => eq(b.architectUserId, user.id),
+    where: (b, { eq }) => eq(b.id, moodBoardId),
   });
-  if (!board) return;
+  if (!board || board.architectUserId !== user.id) return;
 
   const items = await db.query.moodBoardItems.findMany({
     where: (i, { eq }) => eq(i.moodBoardId, board.id),
@@ -61,6 +73,7 @@ export async function sendBoardEnquiry(formData: FormData): Promise<void> {
       manufacturerId,
       moodBoardId: board.id,
       message,
+      type: "sample_request",
     })
     .returning();
 

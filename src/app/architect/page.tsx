@@ -4,28 +4,21 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
-import { removeFromMoodBoard, sendBoardEnquiry } from "./actions";
+import { createProject, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
+import { generateRfq } from "./rfq-actions";
 
 export default async function ArchitectDashboard() {
   const user = await getCurrentDbUser();
   if (!user) redirect("/onboarding");
   if (user.role !== "architect") redirect("/manufacturer");
 
-  const board = await db.query.moodBoards.findFirst({
-    where: (b, { eq }) => eq(b.architectUserId, user.id),
+  const myProjects = await db.query.projects.findMany({
+    where: (p, { eq }) => eq(p.architectUserId, user.id),
+    orderBy: (p, { desc }) => desc(p.createdAt),
   });
 
-  const items = board
-    ? await db.query.moodBoardItems.findMany({
-        where: (i, { eq }) => eq(i.moodBoardId, board.id),
-        orderBy: (i, { desc }) => desc(i.createdAt),
-      })
-    : [];
-
-  const products = await Promise.all(
-    items.map((i) =>
-      db.query.products.findFirst({ where: (p, { eq }) => eq(p.id, i.productId) })
-    )
+  const manufacturersById = new Map(
+    (await db.query.manufacturers.findMany()).map((m) => [m.id, m])
   );
 
   const myEnquiries = await db.query.enquiries.findMany({
@@ -33,81 +26,195 @@ export default async function ArchitectDashboard() {
     orderBy: (e, { desc }) => desc(e.createdAt),
   });
 
-  const manufacturersById = new Map(
-    (await db.query.manufacturers.findMany()).map((m) => [m.id, m])
-  );
+  const rfqGroups = new Map<string, typeof myEnquiries>();
+  const standaloneEnquiries: typeof myEnquiries = [];
+  for (const e of myEnquiries) {
+    if (e.type === "rfq" && e.rfqId) {
+      const list = rfqGroups.get(e.rfqId) ?? [];
+      list.push(e);
+      rfqGroups.set(e.rfqId, list);
+    } else {
+      standaloneEnquiries.push(e);
+    }
+  }
 
-  type BoardEntry = { item: (typeof items)[number]; product: NonNullable<(typeof products)[number]> };
-  const groupsByManufacturer = new Map<string, BoardEntry[]>();
-  items.forEach((item, idx) => {
-    const product = products[idx];
-    if (!product) return;
-    const list = groupsByManufacturer.get(product.manufacturerId) ?? [];
-    list.push({ item, product });
-    groupsByManufacturer.set(product.manufacturerId, list);
-  });
+  const projectSections = await Promise.all(
+    myProjects.map(async (project) => {
+      const board = await db.query.moodBoards.findFirst({
+        where: (b, { eq }) => eq(b.projectId, project.id),
+      });
+
+      const items = board
+        ? await db.query.moodBoardItems.findMany({
+            where: (i, { eq }) => eq(i.moodBoardId, board.id),
+            orderBy: (i, { desc }) => desc(i.createdAt),
+          })
+        : [];
+
+      const products = await Promise.all(
+        items.map((i) =>
+          db.query.products.findFirst({ where: (p, { eq }) => eq(p.id, i.productId) })
+        )
+      );
+
+      const groupsByManufacturer = new Map<
+        string,
+        { item: (typeof items)[number]; product: NonNullable<(typeof products)[number]> }[]
+      >();
+      items.forEach((item, idx) => {
+        const product = products[idx];
+        if (!product) return;
+        const list = groupsByManufacturer.get(product.manufacturerId) ?? [];
+        list.push({ item, product });
+        groupsByManufacturer.set(product.manufacturerId, list);
+      });
+
+      return { project, board, groupsByManufacturer, totalItems: items.length };
+    })
+  );
 
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
-        <h1 className="text-2xl font-semibold">Welcome, {user.name}</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Your mood board and enquiries.
-        </p>
-
-        <section className="mt-10">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">My Mood Board</h2>
-            <Link href="/catalog" className="text-sm font-medium text-terracotta-600 hover:text-terracotta-700">
-              Browse catalog →
-            </Link>
-          </div>
-
-          {groupsByManufacturer.size === 0 ? (
-            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
-              No products saved yet. Browse the catalog and add products to your mood board.
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold">Welcome, {user.name}</h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              Your projects, shortlists, and enquiries.
             </p>
-          ) : (
-            <div className="flex flex-col gap-8">
-              {Array.from(groupsByManufacturer.entries()).map(([manufacturerId, entries]) => (
-                <div key={manufacturerId} className="rounded-xl border border-neutral-200 bg-white p-5">
-                  <h3 className="font-medium text-neutral-900">
-                    {manufacturersById.get(manufacturerId)?.name}
-                  </h3>
+          </div>
+          <Link href="/catalog" className="text-sm font-medium text-terracotta-600 hover:text-terracotta-700">
+            Browse catalog →
+          </Link>
+        </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                    {entries.map(({ item, product: p }) => (
-                      <div key={item.id} className="overflow-hidden rounded-xl border border-neutral-200">
-                        <Link href={`/catalog/${p.slug}`} className="relative block aspect-square w-full bg-neutral-100">
-                          <Image src={p.imageUrl} alt={p.name} fill className="object-cover" />
-                        </Link>
-                        <div className="flex items-center justify-between p-3">
-                          <p className="truncate text-sm font-medium">{p.name}</p>
-                          <form action={removeFromMoodBoard}>
-                            <input type="hidden" name="itemId" value={item.id} />
-                            <button className="text-xs text-neutral-400 hover:text-red-600">Remove</button>
-                          </form>
+        <form action={createProject} className="mt-8 flex gap-2">
+          <input
+            name="name"
+            required
+            placeholder="New project name"
+            className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
+          >
+            New project
+          </button>
+        </form>
+
+        {projectSections.length === 0 ? (
+          <p className="mt-8 rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+            No projects yet. Create one above, or add a product to your mood board from the
+            catalog to start one automatically.
+          </p>
+        ) : (
+          <div className="mt-8 flex flex-col gap-10">
+            {projectSections.map(({ project, board, groupsByManufacturer, totalItems }) => (
+              <section key={project.id} className="rounded-xl border border-neutral-200 bg-neutral-100 p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">{project.name}</h2>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-neutral-500">{totalItems} product{totalItems === 1 ? "" : "s"}</span>
+                    {board && totalItems > 0 && (
+                      <form action={generateRfq}>
+                        <input type="hidden" name="moodBoardId" value={board.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-terracotta-500 px-3 py-1.5 text-xs font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
+                        >
+                          Generate RFQ
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+
+                {groupsByManufacturer.size === 0 ? (
+                  <p className="rounded-xl border border-dashed border-neutral-300 bg-white px-6 py-10 text-center text-sm text-neutral-500">
+                    No products in this project yet. Add products from the catalog.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    {Array.from(groupsByManufacturer.entries()).map(([manufacturerId, entries]) => (
+                      <div key={manufacturerId} className="rounded-xl border border-neutral-200 bg-white p-5">
+                        <h3 className="font-medium text-neutral-900">
+                          {manufacturersById.get(manufacturerId)?.name}
+                        </h3>
+
+                        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                          {entries.map(({ item, product: p }) => (
+                            <div key={item.id} className="overflow-hidden rounded-xl border border-neutral-200">
+                              <Link href={`/catalog/${p.slug}`} className="relative block aspect-square w-full bg-neutral-100">
+                                <Image src={p.imageUrl} alt={p.name} fill className="object-cover" />
+                              </Link>
+                              <div className="flex items-center justify-between p-3">
+                                <p className="truncate text-sm font-medium">{p.name}</p>
+                                <form action={removeFromMoodBoard}>
+                                  <input type="hidden" name="itemId" value={item.id} />
+                                  <button className="text-xs text-neutral-400 hover:text-red-600">Remove</button>
+                                </form>
+                              </div>
+                            </div>
+                          ))}
                         </div>
+
+                        <form action={sendBoardEnquiry} className="mt-4 flex flex-col gap-2 border-t border-neutral-200 pt-4">
+                          <input type="hidden" name="moodBoardId" value={board!.id} />
+                          <input type="hidden" name="manufacturerId" value={manufacturerId} />
+                          <textarea
+                            name="message"
+                            placeholder={`Request samples from ${manufacturersById.get(manufacturerId)?.name} for this shortlist...`}
+                            rows={2}
+                            className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+                          />
+                          <button
+                            type="submit"
+                            className="self-start rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
+                          >
+                            Request samples ({entries.length})
+                          </button>
+                        </form>
                       </div>
                     ))}
                   </div>
+                )}
+              </section>
+            ))}
+          </div>
+        )}
 
-                  <form action={sendBoardEnquiry} className="mt-4 flex flex-col gap-2 border-t border-neutral-200 pt-4">
-                    <input type="hidden" name="manufacturerId" value={manufacturerId} />
-                    <textarea
-                      name="message"
-                      placeholder={`Ask ${manufacturersById.get(manufacturerId)?.name} about this board's ${entries.length} product${entries.length > 1 ? "s" : ""}...`}
-                      rows={2}
-                      className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
-                    />
-                    <button
-                      type="submit"
-                      className="self-start rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
-                    >
-                      Send this board as an enquiry ({entries.length})
-                    </button>
-                  </form>
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">RFQs sent</h2>
+          {rfqGroups.size === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No RFQs yet. Generate one from a project&apos;s shortlist above.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {Array.from(rfqGroups.entries()).map(([rfqId, group]) => (
+                <div key={rfqId} className="rounded-xl border border-neutral-200 bg-white p-4">
+                  <p className="text-sm font-medium">
+                    RFQ
+                    {group.length > 1 && (
+                      <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                        Split across {group.length} suppliers
+                      </span>
+                    )}
+                  </p>
+                  <div className="mt-2 divide-y divide-neutral-100">
+                    {group.map((e) => (
+                      <div key={e.id} className="flex items-center justify-between py-1.5">
+                        <span className="text-sm text-neutral-700">
+                          {manufacturersById.get(e.manufacturerId)?.name}
+                        </span>
+                        <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
+                          {e.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -115,23 +222,21 @@ export default async function ArchitectDashboard() {
         </section>
 
         <section className="mt-14">
-          <h2 className="mb-4 text-lg font-semibold">Enquiries sent</h2>
-          {myEnquiries.length === 0 ? (
+          <h2 className="mb-4 text-lg font-semibold">Sample requests &amp; restocks</h2>
+          {standaloneEnquiries.length === 0 ? (
             <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
               No enquiries yet.
             </p>
           ) : (
             <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
-              {myEnquiries.map((e) => (
+              {standaloneEnquiries.map((e) => (
                 <div key={e.id} className="flex items-start justify-between gap-4 p-4">
                   <div>
                     <p className="text-sm font-medium">
                       {manufacturersById.get(e.manufacturerId)?.name}
-                      {e.moodBoardId && (
-                        <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-                          Board
-                        </span>
-                      )}
+                      <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                        {e.type === "restock" ? "Restock" : "Sample"}
+                      </span>
                     </p>
                     {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
                   </div>

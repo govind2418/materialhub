@@ -88,7 +88,7 @@ export default async function Home() {
               Find the exact finish you&apos;re picturing.
             </h1>
             <p className="max-w-xl text-lg text-neutral-600">
-              Material Hub connects manufacturers with architects and designers —
+              MaterialOS connects manufacturers with architects and designers —
               search visually, build mood boards, and enquire directly.
             </p>
 
@@ -222,7 +222,7 @@ export default async function Home() {
       </main>
 
       <footer className="border-t border-neutral-200 py-8 text-center text-xs text-neutral-400">
-        Material Hub — built for manufacturers and architects.
+        MaterialOS — built for manufacturers and architects.
       </footer>
     </div>
   );

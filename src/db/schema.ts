@@ -28,6 +28,22 @@ export const stockStatusEnum = pgEnum("stock_status", [
   "out_of_stock",
 ]);
 
+export const enquiryTypeEnum = pgEnum("enquiry_type", [
+  "sample_request",
+  "rfq",
+  "restock",
+]);
+
+export const teamMemberRoleEnum = pgEnum("team_member_role", [
+  "distributor",
+  "sales_rep",
+]);
+
+export const teamMemberStatusEnum = pgEnum("team_member_status", [
+  "invited",
+  "active",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -72,6 +88,39 @@ export const products = pgTable("products", {
   panelSizes: jsonb("panel_sizes").$type<string[]>(),
   imageUrl: text("image_url").notNull(),
   viewCount: integer("view_count").default(0).notNull(),
+  certifications: jsonb("certifications").$type<string[]>(),
+  installationGuideUrl: text("installation_guide_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const relatedProducts = pgTable("related_products", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  relatedProductId: uuid("related_product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const productDistributors = pgTable("product_distributors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  distributorUserId: uuid("distributor_user_id")
+    .references(() => users.id)
+    .notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const projects = pgTable("projects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  architectUserId: uuid("architect_user_id")
+    .references(() => users.id)
+    .notNull(),
+  name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -80,6 +129,7 @@ export const moodBoards = pgTable("mood_boards", {
   architectUserId: uuid("architect_user_id")
     .references(() => users.id)
     .notNull(),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -108,6 +158,8 @@ export const enquiries = pgTable("enquiries", {
   moodBoardId: uuid("mood_board_id").references(() => moodBoards.id),
   message: text("message"),
   status: enquiryStatusEnum("status").default("new").notNull(),
+  type: enquiryTypeEnum("type").default("sample_request").notNull(),
+  rfqId: uuid("rfq_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -131,4 +183,16 @@ export const distributorInventory = pgTable("distributor_inventory", {
     .notNull(),
   status: stockStatusEnum("status").default("in_stock").notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const manufacturerTeamMembers = pgTable("manufacturer_team_members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  manufacturerId: uuid("manufacturer_id")
+    .references(() => manufacturers.id, { onDelete: "cascade" })
+    .notNull(),
+  email: text("email").notNull(),
+  userId: uuid("user_id").references(() => users.id),
+  role: teamMemberRoleEnum("role").notNull(),
+  status: teamMemberStatusEnum("status").default("invited").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
