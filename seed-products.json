@@ -1,0 +1,933 @@
+[
+  {
+    "slug": "lis-110",
+    "name": "Cutura LIS-110",
+    "code": "LIS-110",
+    "image": "/products/lis-110.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1250",
+    "name": "Cutura LIS-1250",
+    "code": "LIS-1250",
+    "image": "/products/lis-1250.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-380",
+    "name": "Cutura LIS-380",
+    "code": "LIS-380",
+    "image": "/products/lis-380.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-780",
+    "name": "Cutura LIS-780",
+    "code": "LIS-780",
+    "image": "/products/lis-780.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-700",
+    "name": "Cutura LIS-700",
+    "code": "LIS-700",
+    "image": "/products/lis-700.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-690-a",
+    "name": "Cutura LIS-690",
+    "code": "LIS-690",
+    "image": "/products/lis-690-a.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-940-a",
+    "name": "Cutura LIS-940",
+    "code": "LIS-940",
+    "image": "/products/lis-940-a.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-60",
+    "name": "Cutura LIS-60",
+    "code": "LIS-60",
+    "image": "/products/lis-60.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "Walnut",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1160",
+    "name": "Cutura LIS-1160",
+    "code": "LIS-1160",
+    "image": "/products/lis-1160.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-950",
+    "name": "Cutura LIS-950",
+    "code": "LIS-950",
+    "image": "/products/lis-950.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1350-a",
+    "name": "Cutura LIS-1350",
+    "code": "LIS-1350",
+    "image": "/products/lis-1350-a.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1350-b",
+    "name": "Cutura LIS-1350",
+    "code": "LIS-1350",
+    "image": "/products/lis-1350-b.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-240",
+    "name": "Cutura LIS-240",
+    "code": "LIS-240",
+    "image": "/products/lis-240.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1050",
+    "name": "Cutura LIS-1050",
+    "code": "LIS-1050",
+    "image": "/products/lis-1050.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1630",
+    "name": "Cutura LIS-1630",
+    "code": "LIS-1630",
+    "image": "/products/lis-1630.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-750",
+    "name": "Cutura LIS-750",
+    "code": "LIS-750",
+    "image": "/products/lis-750.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-340",
+    "name": "Cutura LIS-340",
+    "code": "LIS-340",
+    "image": "/products/lis-340.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-370",
+    "name": "Cutura LIS-370",
+    "code": "LIS-370",
+    "image": "/products/lis-370.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-280",
+    "name": "Cutura LIS-280",
+    "code": "LIS-280",
+    "image": "/products/lis-280.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-650",
+    "name": "Cutura LIS-650",
+    "code": "LIS-650",
+    "image": "/products/lis-650.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-140",
+    "name": "Cutura LIS-140",
+    "code": "LIS-140",
+    "image": "/products/lis-140.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-970",
+    "name": "Cutura LIS-970",
+    "code": "LIS-970",
+    "image": "/products/lis-970.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-940-b",
+    "name": "Cutura LIS-940",
+    "code": "LIS-940",
+    "image": "/products/lis-940-b.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-640",
+    "name": "Cutura LIS-640",
+    "code": "LIS-640",
+    "image": "/products/lis-640.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-980",
+    "name": "Cutura LIS-980",
+    "code": "LIS-980",
+    "image": "/products/lis-980.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-710",
+    "name": "Cutura LIS-710",
+    "code": "LIS-710",
+    "image": "/products/lis-710.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1060",
+    "name": "Cutura LIS-1060",
+    "code": "LIS-1060",
+    "image": "/products/lis-1060.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-400",
+    "name": "Cutura LIS-400",
+    "code": "LIS-400",
+    "image": "/products/lis-400.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-120",
+    "name": "Cutura LIS-120",
+    "code": "LIS-120",
+    "image": "/products/lis-120.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-690-b",
+    "name": "Cutura LIS-690",
+    "code": "LIS-690",
+    "image": "/products/lis-690-b.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-170-a",
+    "name": "Cutura LIS-170",
+    "code": "LIS-170",
+    "image": "/products/lis-170-a.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-170-b",
+    "name": "Cutura LIS-170",
+    "code": "LIS-170",
+    "image": "/products/lis-170-b.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1120",
+    "name": "Cutura LIS-1120",
+    "code": "LIS-1120",
+    "image": "/products/lis-1120.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1000",
+    "name": "Cutura LIS-1000",
+    "code": "LIS-1000",
+    "image": "/products/lis-1000.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-360",
+    "name": "Cutura LIS-360",
+    "code": "LIS-360",
+    "image": "/products/lis-360.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-1260",
+    "name": "Cutura LIS-1260",
+    "code": "LIS-1260",
+    "image": "/products/lis-1260.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "lis-990",
+    "name": "Cutura LIS-990",
+    "code": "LIS-990",
+    "image": "/products/lis-990.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Cutura Series Fluted Veneers",
+    "category": "Fluted Veneer Panel",
+    "wood_specie": "White Oak",
+    "veneer_thickness": "5mm",
+    "base": "Imported Plywood MR Grade",
+    "weight_per_panel": "22-25 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": "Bendable with paper backing",
+    "panel_sizes": [
+      "10'x4'",
+      "8'x4'"
+    ]
+  },
+  {
+    "slug": "macassar-ebony-jute",
+    "name": "Macassar Ebony Jute",
+    "code": null,
+    "image": "/products/macassar-ebony-jute.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "linear-ridge-q105",
+    "name": "Linear Ridge",
+    "code": "Q105",
+    "image": "/products/linear-ridge-q105.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "edge-45-q107",
+    "name": "Edge 45",
+    "code": "Q107",
+    "image": "/products/edge-45-q107.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "silver-maze-q105",
+    "name": "Silver Maze",
+    "code": "Q105",
+    "image": "/products/silver-maze-q105.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "qr-q107",
+    "name": "QR",
+    "code": "Q107",
+    "image": "/products/qr-q107.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "qr-oak-beige",
+    "name": "QR Oak Beige",
+    "code": null,
+    "image": "/products/qr-oak-beige.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "qr-walnut",
+    "name": "QR Walnut",
+    "code": null,
+    "image": "/products/qr-walnut.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "chevron-oak-grey",
+    "name": "Chevron Oak Grey",
+    "code": null,
+    "image": "/products/chevron-oak-grey.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "jute-walnut",
+    "name": "Jute Walnut",
+    "code": null,
+    "image": "/products/jute-walnut.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "distressed-q107",
+    "name": "Distressed",
+    "code": "Q107",
+    "image": "/products/distressed-q107.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "techno-flute-oak",
+    "name": "Techno Flute Oak",
+    "code": null,
+    "image": "/products/techno-flute-oak.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  },
+  {
+    "slug": "fluted-oak",
+    "name": "Fluted Oak",
+    "code": null,
+    "image": "/products/fluted-oak.png",
+    "manufacturer": "leela-infra-solution",
+    "collection": "Embosh Textured Veneer 2026",
+    "category": "Textured Veneer Panel",
+    "wood_specie": "All Veneer",
+    "veneer_thickness": "0.5mm",
+    "base": "Plywood/HDHMR",
+    "weight_per_panel": "10.5 kgs",
+    "finish": "Fine Sanded",
+    "flexibility": null,
+    "panel_sizes": [
+      "8x4ft",
+      "10x4ft"
+    ]
+  }
+]
