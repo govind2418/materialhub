@@ -71,6 +71,7 @@ export const products = pgTable("products", {
   weightPerPanel: text("weight_per_panel"),
   panelSizes: jsonb("panel_sizes").$type<string[]>(),
   imageUrl: text("image_url").notNull(),
+  viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

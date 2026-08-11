@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
+import { products } from "@/db/schema";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import { addToMoodBoard, sendEnquiry } from "./actions";
@@ -18,6 +20,11 @@ export default async function ProductDetailPage({
   });
 
   if (!product) notFound();
+
+  await db
+    .update(products)
+    .set({ viewCount: sql`${products.viewCount} + 1` })
+    .where(eq(products.id, product.id));
 
   const manufacturer = await db.query.manufacturers.findFirst({
     where: (m, { eq }) => eq(m.id, product.manufacturerId),

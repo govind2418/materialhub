@@ -28,6 +28,25 @@ export default async function ManufacturerDashboard() {
       })
     : [];
 
+  const enquiryItemsByEnquiry = myEnquiries.length
+    ? await db.query.enquiryItems.findMany({
+        where: (i, { inArray }) =>
+          inArray(i.enquiryId, myEnquiries.map((e) => e.id)),
+      })
+    : [];
+
+  const enquiryCountByProduct = new Map<string, number>();
+  for (const item of enquiryItemsByEnquiry) {
+    enquiryCountByProduct.set(
+      item.productId,
+      (enquiryCountByProduct.get(item.productId) ?? 0) + 1
+    );
+  }
+
+  const analyticsRows = [...myProducts]
+    .sort((a, b) => b.viewCount - a.viewCount)
+    .slice(0, 10);
+
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
@@ -63,6 +82,39 @@ export default async function ManufacturerDashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            <h2 className="mb-4 mt-14 text-lg font-semibold">Analytics</h2>
+            {analyticsRows.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+                No data yet. Views and enquiries will show up here once buyers start browsing.
+              </p>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-neutral-200 text-xs uppercase tracking-wide text-neutral-500">
+                      <th className="px-4 py-2.5 font-medium">Product</th>
+                      <th className="px-4 py-2.5 font-medium">Views</th>
+                      <th className="px-4 py-2.5 font-medium">Enquiries</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {analyticsRows.map((p) => (
+                      <tr key={p.id}>
+                        <td className="px-4 py-2.5">
+                          <p className="font-medium">{p.name}</p>
+                          <p className="text-xs text-neutral-500">{p.code}</p>
+                        </td>
+                        <td className="px-4 py-2.5 text-neutral-700">{p.viewCount}</td>
+                        <td className="px-4 py-2.5 text-neutral-700">
+                          {enquiryCountByProduct.get(p.id) ?? 0}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
