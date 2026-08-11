@@ -31,7 +31,7 @@ export async function completeOnboarding(formData: FormData) {
     })
     .returning();
 
-  if (role === "manufacturer") {
+  if (role === "manufacturer" || role === "sales_rep") {
     const slug = companyName
       .toLowerCase()
       .trim()
@@ -50,8 +50,15 @@ export async function completeOnboarding(formData: FormData) {
       })
       .onConflictDoNothing({ target: manufacturers.slug });
 
-    redirect("/manufacturer");
+    if (role === "manufacturer") redirect("/manufacturer");
   }
 
-  redirect("/architect");
+  const dashboardByRole: Record<string, string> = {
+    architect: "/architect",
+    distributor: "/distributor",
+    retailer: "/retailer",
+    sales_rep: "/sales-rep",
+  };
+
+  redirect(dashboardByRole[role] ?? "/architect");
 }

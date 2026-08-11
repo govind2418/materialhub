@@ -3,12 +3,29 @@ import { db } from "@/db";
 import { ProductCard } from "@/components/product-card";
 import { SiteHeader } from "@/components/site-header";
 
+type CatalogSearchParams = {
+  category?: string;
+  collection?: string;
+  finish?: string;
+  q?: string;
+};
+
+function buildHref(current: CatalogSearchParams, overrides: CatalogSearchParams) {
+  const merged = { ...current, ...overrides };
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(merged)) {
+    if (value) params.set(key, value);
+  }
+  const qs = params.toString();
+  return qs ? `/catalog?${qs}` : "/catalog";
+}
+
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; collection?: string }>;
+  searchParams: Promise<CatalogSearchParams>;
 }) {
-  const { category, collection } = await searchParams;
+  const { category, collection, finish, q } = await searchParams;
 
   const allProducts = await db.query.products.findMany({
     orderBy: (p, { asc }) => asc(p.name),
@@ -20,64 +37,102 @@ export default async function CatalogPage({
   const collections = Array.from(
     new Set(allProducts.map((p) => p.collection).filter(Boolean))
   ) as string[];
+  const finishes = Array.from(
+    new Set(allProducts.map((p) => p.finish).filter(Boolean))
+  ) as string[];
 
-  const filtered = allProducts.filter(
-    (p) =>
-      (!category || p.category === category) &&
-      (!collection || p.collection === collection)
-  );
+  const query = q?.trim().toLowerCase();
+
+  const filtered = allProducts.filter((p) => {
+    if (category && p.category !== category) return false;
+    if (collection && p.collection !== collection) return false;
+    if (finish && p.finish !== finish) return false;
+    if (query) {
+      const haystack = [p.name, p.code, p.category, p.finish, p.collection]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+    return true;
+  });
+
+  const current: CatalogSearchParams = { category, collection, finish, q };
 
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Catalog</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          {filtered.length} products from verified manufacturers.
-        </p>
-      </div>
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold">Catalog</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            {filtered.length} products from verified manufacturers.
+            {query && <> Showing results for &ldquo;{q}&rdquo;.</>}
+          </p>
+        </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <FilterPill
-          label="All categories"
-          active={!category}
-          href="/catalog"
-        />
-        {categories.map((c) => (
+        <div className="mb-6 flex flex-wrap gap-2">
           <FilterPill
-            key={c}
-            label={c}
-            active={category === c}
-            href={`/catalog?category=${encodeURIComponent(c)}`}
+            label="All categories"
+            active={!category}
+            href={buildHref(current, { category: undefined })}
           />
-        ))}
-      </div>
+          {categories.map((c) => (
+            <FilterPill
+              key={c}
+              label={c}
+              active={category === c}
+              href={buildHref(current, { category: c })}
+            />
+          ))}
+        </div>
 
-      <div className="mb-8 flex flex-wrap gap-2">
-        {collections.map((c) => (
-          <FilterPill
-            key={c}
-            label={c}
-            active={collection === c}
-            href={`/catalog?${category ? `category=${encodeURIComponent(category)}&` : ""}collection=${encodeURIComponent(c)}`}
-            subtle
-          />
-        ))}
-      </div>
+        {collections.length > 0 && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {collections.map((c) => (
+              <FilterPill
+                key={c}
+                label={c}
+                active={collection === c}
+                href={buildHref(current, { collection: collection === c ? undefined : c })}
+                subtle
+              />
+            ))}
+          </div>
+        )}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {filtered.map((p) => (
-          <ProductCard
-            key={p.id}
-            slug={p.slug}
-            name={p.name}
-            code={p.code}
-            imageUrl={p.imageUrl}
-            collection={p.collection}
-          />
-        ))}
-      </div>
+        {finishes.length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            {finishes.map((f) => (
+              <FilterPill
+                key={f}
+                label={f}
+                active={finish === f}
+                href={buildHref(current, { finish: finish === f ? undefined : f })}
+                subtle
+              />
+            ))}
+          </div>
+        )}
+
+        {filtered.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-16 text-center text-sm text-neutral-500">
+            No products match these filters yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {filtered.map((p) => (
+              <ProductCard
+                key={p.id}
+                slug={p.slug}
+                name={p.name}
+                code={p.code}
+                imageUrl={p.imageUrl}
+                collection={p.collection}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

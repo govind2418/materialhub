@@ -2,11 +2,36 @@ import { redirect } from "next/navigation";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { completeOnboarding } from "./actions";
 
-export default async function OnboardingPage() {
+const DASHBOARD_BY_ROLE: Record<string, string> = {
+  manufacturer: "/manufacturer",
+  architect: "/architect",
+  distributor: "/distributor",
+  retailer: "/retailer",
+  sales_rep: "/sales-rep",
+};
+
+const ROLE_OPTIONS = [
+  { value: "manufacturer", label: "Manufacturer" },
+  { value: "architect", label: "Architect / Designer" },
+  { value: "distributor", label: "Distributor" },
+  { value: "retailer", label: "Retailer" },
+  { value: "sales_rep", label: "Sales rep" },
+];
+
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ role?: string }>;
+}) {
   const existing = await getCurrentDbUser();
   if (existing) {
-    redirect(existing.role === "manufacturer" ? "/manufacturer" : "/architect");
+    redirect(DASHBOARD_BY_ROLE[existing.role] ?? "/architect");
   }
+
+  const { role: preselectedRole } = await searchParams;
+  const defaultRole = ROLE_OPTIONS.some((r) => r.value === preselectedRole)
+    ? preselectedRole
+    : "architect";
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
@@ -17,10 +42,7 @@ export default async function OnboardingPage() {
 
       <form action={completeOnboarding} className="mt-8 flex flex-col gap-4">
         <fieldset className="grid grid-cols-2 gap-3">
-          {[
-            { value: "manufacturer", label: "Manufacturer" },
-            { value: "architect", label: "Architect / Designer" },
-          ].map((r) => (
+          {ROLE_OPTIONS.map((r) => (
             <label
               key={r.value}
               className="flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 px-4 py-3 has-[:checked]:border-neutral-900 has-[:checked]:bg-neutral-900 has-[:checked]:text-white"
@@ -30,7 +52,7 @@ export default async function OnboardingPage() {
                 name="role"
                 value={r.value}
                 required
-                defaultChecked={r.value === "architect"}
+                defaultChecked={r.value === defaultRole}
                 className="sr-only"
               />
               <span className="text-sm font-medium">{r.label}</span>

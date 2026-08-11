@@ -22,6 +22,12 @@ export const enquiryStatusEnum = pgEnum("enquiry_status", [
   "closed",
 ]);
 
+export const stockStatusEnum = pgEnum("stock_status", [
+  "in_stock",
+  "low_stock",
+  "out_of_stock",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -112,4 +118,16 @@ export const enquiryItems = pgTable("enquiry_items", {
   productId: uuid("product_id")
     .references(() => products.id)
     .notNull(),
+});
+
+export const distributorInventory = pgTable("distributor_inventory", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  distributorUserId: uuid("distributor_user_id")
+    .references(() => users.id)
+    .notNull(),
+  productId: uuid("product_id")
+    .references(() => products.id)
+    .notNull(),
+  status: stockStatusEnum("status").default("in_stock").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

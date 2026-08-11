@@ -3,11 +3,18 @@ import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { getCurrentDbUser } from "@/lib/current-user";
 
+const DASHBOARD_BY_ROLE: Record<string, string> = {
+  manufacturer: "/manufacturer",
+  architect: "/architect",
+  distributor: "/distributor",
+  retailer: "/retailer",
+  sales_rep: "/sales-rep",
+};
+
 export async function SiteHeader() {
   const { userId } = await auth();
   const dbUser = userId ? await getCurrentDbUser() : null;
-  const dashboardHref =
-    dbUser?.role === "manufacturer" ? "/manufacturer" : "/architect";
+  const dashboardHref = dbUser ? DASHBOARD_BY_ROLE[dbUser.role] ?? "/onboarding" : "/onboarding";
 
   return (
     <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/90 backdrop-blur">
@@ -18,6 +25,15 @@ export async function SiteHeader() {
         <nav className="flex items-center gap-6 text-sm font-medium text-neutral-600">
           <Link href="/catalog" className="hover:text-neutral-900">
             Catalog
+          </Link>
+          <Link href="/catalog" className="hover:text-neutral-900">
+            Collections
+          </Link>
+          <Link href="/architect" className="hover:text-neutral-900">
+            Mood boards
+          </Link>
+          <Link href="/onboarding" className="hover:text-neutral-900">
+            For business
           </Link>
           {!userId ? (
             <>
@@ -33,7 +49,7 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
-              <Link href={dbUser ? dashboardHref : "/onboarding"} className="hover:text-neutral-900">
+              <Link href={dashboardHref} className="hover:text-neutral-900">
                 Dashboard
               </Link>
               <UserButton />

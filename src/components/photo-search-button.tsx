@@ -1,0 +1,51 @@
+"use client";
+
+import { useState } from "react";
+
+export function PhotoSearchButton() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Search by photo"
+        className="flex h-full items-center gap-2 rounded-full border border-neutral-300 px-4 py-3 text-sm font-medium text-neutral-700 hover:border-neutral-400"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.75}
+          className="h-4 w-4"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 9a2 2 0 0 1 2-2h1.5l1-1.5h9l1 1.5H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"
+          />
+          <circle cx="12" cy="13" r="3.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Photo search
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-10 mt-2 w-64 rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-lg">
+          <p className="font-medium text-neutral-900">Coming soon</p>
+          <p className="mt-1 text-neutral-500">
+            Upload a photo of a material and we&apos;ll find the closest visual matches.
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-3 text-xs font-medium text-neutral-500 hover:text-neutral-900"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
