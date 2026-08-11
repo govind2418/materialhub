@@ -14,12 +14,12 @@ async function getOwnedManufacturer(userId: string) {
   });
 }
 
-export async function createProduct(formData: FormData) {
+export async function createProduct(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
-  if (!user || user.role !== "manufacturer") return { error: "not-authorized" };
+  if (!user || user.role !== "manufacturer") return;
 
   const manufacturer = await getOwnedManufacturer(user.id);
-  if (!manufacturer) return { error: "no-manufacturer" };
+  if (!manufacturer) return;
 
   const name = String(formData.get("name") ?? "");
   const code = String(formData.get("code") ?? "") || null;
@@ -61,7 +61,6 @@ export async function createProduct(formData: FormData) {
   });
 
   revalidatePath("/manufacturer");
-  return { ok: true };
 }
 
 export async function deleteProduct(formData: FormData) {

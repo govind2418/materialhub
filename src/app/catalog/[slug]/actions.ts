@@ -38,9 +38,9 @@ export async function addToMoodBoard(productId: string) {
   return { ok: true };
 }
 
-export async function sendEnquiry(formData: FormData) {
+export async function sendEnquiry(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
-  if (!user || user.role !== "architect") return { error: "not-authorized" };
+  if (!user || user.role !== "architect") return;
 
   const productId = String(formData.get("productId"));
   const message = String(formData.get("message") ?? "");
@@ -48,7 +48,7 @@ export async function sendEnquiry(formData: FormData) {
   const product = await db.query.products.findFirst({
     where: eq(products.id, productId),
   });
-  if (!product) return { error: "not-found" };
+  if (!product) return;
 
   const [enquiry] = await db
     .insert(enquiries)
@@ -62,5 +62,4 @@ export async function sendEnquiry(formData: FormData) {
   await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId });
 
   revalidatePath("/architect");
-  return { ok: true };
 }
