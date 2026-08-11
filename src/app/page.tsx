@@ -95,13 +95,13 @@ export default async function Home() {
             <form
               action="/catalog"
               method="GET"
-              className="flex w-full max-w-xl items-stretch gap-2"
+              className="flex w-full max-w-xl flex-wrap items-stretch gap-2"
             >
               <input
                 type="text"
                 name="q"
                 placeholder="light oak texture, office"
-                className="flex-1 rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm focus:border-terracotta-500 focus:outline-none"
+                className="min-w-0 flex-1 basis-full rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm focus:border-terracotta-500 focus:outline-none sm:basis-auto"
               />
               <button
                 type="submit"
