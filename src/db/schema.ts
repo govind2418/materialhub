@@ -322,6 +322,16 @@ export type BoqRow = {
   matchedProductId: string | null;
 };
 
+export const searchLog = pgTable("search_log", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  query: text("query"),
+  category: text("category"),
+  finish: text("finish"),
+  collection: text("collection"),
+  resultCount: integer("result_count"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const boqUploads = pgTable("boq_uploads", {
   id: uuid("id").primaryKey().defaultRandom(),
   architectUserId: uuid("architect_user_id")

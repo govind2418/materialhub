@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enquiryTypeLabel } from "@/lib/enquiry-labels";
+import { getCategoryPriceStats } from "@/lib/price-intelligence";
+import { getDemandTrends } from "@/lib/demand-intelligence";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
 import {
@@ -151,6 +153,19 @@ export default async function ManufacturerDashboard() {
       link.projectReferenceId,
       (referenceProductCount.get(link.projectReferenceId) ?? 0) + 1
     );
+  }
+
+  const myCategories = [...new Set(myProducts.map((p) => p.category).filter(Boolean))] as string[];
+  const categoryPriceStats = await getCategoryPriceStats();
+  const demandTrends = await getDemandTrends();
+  const myAvgPriceByCategory = new Map<string, number>();
+  for (const category of myCategories) {
+    const prices = myProducts
+      .filter((p) => p.category === category && p.pricePerSheet != null)
+      .map((p) => p.pricePerSheet!);
+    if (prices.length > 0) {
+      myAvgPriceByCategory.set(category, Math.round(prices.reduce((s, v) => s + v, 0) / prices.length));
+    }
   }
 
   return (
@@ -453,6 +468,98 @@ export default async function ManufacturerDashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            <h2 className="mb-4 mt-14 text-lg font-semibold">Price intelligence</h2>
+            {myCategories.length === 0 ? (
+              <p className="mb-4 rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+                Add products with a category to see pricing trends.
+              </p>
+            ) : (
+              <div className="mb-4 overflow-x-auto rounded-xl border border-neutral-200 bg-white">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-neutral-200 text-xs uppercase tracking-wide text-neutral-500">
+                      <th className="px-4 py-2.5 font-medium">Category</th>
+                      <th className="px-4 py-2.5 font-medium">Your avg listed price</th>
+                      <th className="px-4 py-2.5 font-medium">Platform listed range</th>
+                      <th className="px-4 py-2.5 font-medium">Platform avg quoted price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {myCategories.map((category) => {
+                      const stats = categoryPriceStats.get(category);
+                      const myAvg = myAvgPriceByCategory.get(category);
+                      return (
+                        <tr key={category}>
+                          <td className="px-4 py-2.5 font-medium">{category}</td>
+                          <td className="px-4 py-2.5 text-neutral-700">
+                            {myAvg != null ? `₹${myAvg.toLocaleString("en-IN")}` : "—"}
+                          </td>
+                          <td className="px-4 py-2.5 text-neutral-700">
+                            {stats?.listedMin != null && stats.listedMax != null
+                              ? `₹${stats.listedMin.toLocaleString("en-IN")} – ₹${stats.listedMax.toLocaleString("en-IN")} (${stats.listedCount} listed)`
+                              : "—"}
+                          </td>
+                          <td className="px-4 py-2.5 text-neutral-500">
+                            {stats && stats.quotedCount > 0
+                              ? `₹${stats.quotedAvg!.toLocaleString("en-IN")} (from ${stats.quotedCount} quote${stats.quotedCount === 1 ? "" : "s"})`
+                              : "Not enough quote data yet"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <h2 className="mb-4 mt-14 text-lg font-semibold">Demand trends</h2>
+            <p className="mb-4 -mt-2 text-xs text-neutral-500">
+              What architects are searching for platform-wide, last 30 days ({demandTrends.totalSearches}{" "}
+              searches logged).
+            </p>
+            {demandTrends.totalSearches === 0 ? (
+              <p className="mb-4 rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+                Not enough search data yet — this fills in as buyers use the catalog filters.
+              </p>
+            ) : (
+              <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-neutral-200 bg-white p-4">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Top searched categories
+                  </p>
+                  {demandTrends.topCategories.length === 0 ? (
+                    <p className="text-sm text-neutral-400">No category data yet.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5 text-sm">
+                      {demandTrends.topCategories.map((c) => (
+                        <li key={c.value} className="flex justify-between">
+                          <span>{c.value}</span>
+                          <span className="text-neutral-500">{c.count}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="rounded-xl border border-neutral-200 bg-white p-4">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Top searched finishes
+                  </p>
+                  {demandTrends.topFinishes.length === 0 ? (
+                    <p className="text-sm text-neutral-400">No finish data yet.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5 text-sm">
+                      {demandTrends.topFinishes.map((f) => (
+                        <li key={f.value} className="flex justify-between">
+                          <span>{f.value}</span>
+                          <span className="text-neutral-500">{f.count}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             )}
 

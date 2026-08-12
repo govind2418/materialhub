@@ -8,6 +8,7 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import { ProductCard } from "@/components/product-card";
 import { addToCart } from "@/app/cart/actions";
+import { getCategoryPriceStats } from "@/lib/price-intelligence";
 import { addToMoodBoard, enquireRepresentative, sendEnquiry } from "./actions";
 
 export default async function ProductDetailPage({
@@ -34,6 +35,10 @@ export default async function ProductDetailPage({
   const manufacturer = await db.query.manufacturers.findFirst({
     where: (m, { eq }) => eq(m.id, product.manufacturerId),
   });
+
+  const priceBenchmark = product.category
+    ? (await getCategoryPriceStats()).get(product.category) ?? null
+    : null;
 
   const user = await getCurrentDbUser();
   const isArchitect = user?.role === "architect";
@@ -213,6 +218,15 @@ export default async function ProductDetailPage({
             <p className="mt-2 text-xl font-semibold text-neutral-900">
               ₹{product.pricePerSheet.toLocaleString("en-IN")}
               <span className="text-sm font-normal text-neutral-500"> / sheet</span>
+            </p>
+          )}
+          {priceBenchmark?.listedMin != null && priceBenchmark.listedMax != null && (
+            <p className="mt-1 text-xs text-neutral-500">
+              Typical range for {product.category}: ₹{priceBenchmark.listedMin.toLocaleString("en-IN")}
+              {" – "}₹{priceBenchmark.listedMax.toLocaleString("en-IN")} per sheet (
+              {priceBenchmark.listedCount} listed product{priceBenchmark.listedCount === 1 ? "" : "s"})
+              {priceBenchmark.quotedCount > 0 &&
+                ` · recent quotes avg ₹${priceBenchmark.quotedAvg!.toLocaleString("en-IN")}`}
             </p>
           )}
 

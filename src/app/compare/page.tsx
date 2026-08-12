@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
+import { getCategoryPriceStats } from "@/lib/price-intelligence";
 
 const SPEC_ROWS: { label: string; get: (p: { [k: string]: unknown }) => string }[] = [
   { label: "Manufacturer", get: (p) => String(p.manufacturerName ?? "—") },
@@ -56,6 +57,8 @@ export default async function ComparePage({
     manufacturerName: manufacturerNameById.get(p.manufacturerId),
   }));
 
+  const priceStats = rows.length ? await getCategoryPriceStats() : new Map();
+
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
@@ -98,6 +101,31 @@ export default async function ComparePage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
+                <tr>
+                  <td className="py-2.5 pr-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Price / sheet
+                  </td>
+                  {rows.map((p) => (
+                    <td key={p.id} className="px-3 py-2.5 font-medium text-neutral-900">
+                      {p.pricePerSheet != null ? `₹${p.pricePerSheet.toLocaleString("en-IN")}` : "—"}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td className="py-2.5 pr-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                    Category price range
+                  </td>
+                  {rows.map((p) => {
+                    const stats = p.category ? priceStats.get(p.category) : null;
+                    return (
+                      <td key={p.id} className="px-3 py-2.5 text-xs text-neutral-500">
+                        {stats?.listedMin != null && stats.listedMax != null
+                          ? `₹${stats.listedMin.toLocaleString("en-IN")} – ₹${stats.listedMax.toLocaleString("en-IN")}`
+                          : "—"}
+                      </td>
+                    );
+                  })}
+                </tr>
                 {SPEC_ROWS.map((row) => (
                   <tr key={row.label}>
                     <td className="py-2.5 pr-3 text-xs font-medium uppercase tracking-wide text-neutral-500">

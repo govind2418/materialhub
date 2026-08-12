@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/db";
+import { searchLog } from "@/db/schema";
 import { SelectableProductGrid } from "@/components/selectable-product-grid";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -61,6 +62,16 @@ export default async function CatalogPage({
   });
 
   const current: CatalogSearchParams = { category, collection, finish, q, project: projectId };
+
+  if (query || category || finish || collection) {
+    await db.insert(searchLog).values({
+      query: query || null,
+      category: category || null,
+      finish: finish || null,
+      collection: collection || null,
+      resultCount: filtered.length,
+    });
+  }
 
   let inspiration: Awaited<ReturnType<typeof db.query.projectReferences.findMany>> = [];
   if (category) {
