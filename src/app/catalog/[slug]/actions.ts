@@ -66,3 +66,30 @@ export async function sendEnquiry(formData: FormData): Promise<void> {
 
   revalidatePath("/architect");
 }
+
+export async function enquireRepresentative(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "architect") return;
+
+  const productId = String(formData.get("productId"));
+  const message = String(formData.get("message") ?? "");
+
+  const product = await db.query.products.findFirst({
+    where: eq(products.id, productId),
+  });
+  if (!product) return;
+
+  const [enquiry] = await db
+    .insert(enquiries)
+    .values({
+      architectUserId: user.id,
+      manufacturerId: product.manufacturerId,
+      message,
+      type: "general_enquiry",
+    })
+    .returning();
+
+  await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId });
+
+  revalidatePath("/architect");
+}

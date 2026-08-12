@@ -42,6 +42,8 @@ export async function createProduct(formData: FormData): Promise<void> {
     ? certificationsRaw.split(",").map((s) => s.trim()).filter(Boolean)
     : null;
   const installationGuideUrl = String(formData.get("installationGuideUrl") ?? "") || null;
+  const pricePerSheetRaw = String(formData.get("pricePerSheet") ?? "").trim();
+  const pricePerSheet = pricePerSheetRaw ? Number.parseInt(pricePerSheetRaw, 10) : null;
 
   const file = formData.get("image") as File | null;
   let imageUrl = "/products/placeholder.png";
@@ -71,6 +73,7 @@ export async function createProduct(formData: FormData): Promise<void> {
     imageUrl,
     certifications,
     installationGuideUrl,
+    pricePerSheet,
   });
 
   revalidatePath("/manufacturer");

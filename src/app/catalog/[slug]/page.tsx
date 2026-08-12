@@ -7,7 +7,8 @@ import { products } from "@/db/schema";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import { ProductCard } from "@/components/product-card";
-import { addToMoodBoard, sendEnquiry } from "./actions";
+import { addToCart } from "@/app/cart/actions";
+import { addToMoodBoard, enquireRepresentative, sendEnquiry } from "./actions";
 
 export default async function ProductDetailPage({
   params,
@@ -151,6 +152,13 @@ export default async function ProductDetailPage({
           </div>
           <h1 className="mt-1 text-2xl font-semibold">{product.name}</h1>
 
+          {product.pricePerSheet && (
+            <p className="mt-2 text-xl font-semibold text-neutral-900">
+              ₹{product.pricePerSheet.toLocaleString("en-IN")}
+              <span className="text-sm font-normal text-neutral-500"> / sheet</span>
+            </p>
+          )}
+
           <dl className="mt-6 divide-y divide-neutral-200 border-y border-neutral-200 text-sm">
             {specs
               .filter(([, v]) => v)
@@ -190,41 +198,74 @@ export default async function ProductDetailPage({
           <div className="mt-6 flex flex-col gap-3">
             {isArchitect ? (
               <>
-                <form action={addAction}>
-                  <button
-                    type="submit"
-                    className="w-full rounded-lg border border-terracotta-500 px-4 py-2.5 text-sm font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
-                  >
-                    {targetProject ? `Add to "${targetProject.name}"` : "Add to Mood Board"}
-                  </button>
-                </form>
-
-                <form action={sendEnquiry} className="flex flex-col gap-2">
+                <form action={addToCart} className="flex gap-2">
                   <input type="hidden" name="productId" value={product.id} />
-                  <textarea
-                    name="message"
-                    placeholder={`Ask ${manufacturer?.name} about pricing, samples, or lead time...`}
-                    rows={3}
-                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+                  <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    defaultValue={1}
+                    className="w-20 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
                   />
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-terracotta-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-terracotta-600"
+                    className="flex-1 rounded-lg bg-terracotta-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-terracotta-600"
                   >
-                    Send Enquiry
+                    Add to Cart
                   </button>
                 </form>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <form action={sendEnquiry}>
+                    <input type="hidden" name="productId" value={product.id} />
+                    <button
+                      type="submit"
+                      className="w-full rounded-lg border border-terracotta-500 px-4 py-2.5 text-sm font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
+                    >
+                      Get Sample
+                    </button>
+                  </form>
+                  <form action={addAction}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600"
+                    >
+                      {targetProject ? "Add to project" : "Add to Mood Board"}
+                    </button>
+                  </form>
+                </div>
+
+                <details className="rounded-lg border border-neutral-200">
+                  <summary className="cursor-pointer list-none px-4 py-2.5 text-sm font-medium text-neutral-700 hover:text-terracotta-600">
+                    Enquire representative
+                  </summary>
+                  <form action={enquireRepresentative} className="flex flex-col gap-2 border-t border-neutral-200 p-3">
+                    <input type="hidden" name="productId" value={product.id} />
+                    <textarea
+                      name="message"
+                      placeholder={`Ask ${manufacturer?.name}'s representative about pricing, lead time, or bulk orders...`}
+                      rows={3}
+                      className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="self-start rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                    >
+                      Send to representative
+                    </button>
+                  </form>
+                </details>
               </>
             ) : user ? (
               <p className="text-sm text-neutral-500">
-                Sign in as an architect to add this to a mood board or send an enquiry.
+                Sign in as an architect to buy, request a sample, or enquire.
               </p>
             ) : (
               <Link
                 href="/sign-in"
                 className="w-full rounded-lg bg-terracotta-500 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-terracotta-600"
               >
-                Sign in to enquire
+                Sign in to buy or enquire
               </Link>
             )}
           </div>
@@ -246,6 +287,7 @@ export default async function ProductDetailPage({
                 imageUrl={alt.imageUrl}
                 collection={alt.collection}
                 verificationStatus={alt.verificationStatus}
+                pricePerSheet={alt.pricePerSheet}
               />
             ))}
           </div>

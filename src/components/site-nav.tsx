@@ -14,11 +14,26 @@ const NAV_LINKS = [
 export function SiteNav({
   signedIn,
   dashboardHref,
+  showCart,
+  cartCount,
 }: {
   signedIn: boolean;
   dashboardHref: string;
+  showCart?: boolean;
+  cartCount?: number;
 }) {
   const [open, setOpen] = useState(false);
+
+  const cartLink = showCart && (
+    <Link href="/cart" className="relative hover:text-neutral-900">
+      Cart
+      {!!cartCount && (
+        <span className="ml-1 rounded-full bg-terracotta-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+          {cartCount}
+        </span>
+      )}
+    </Link>
+  );
 
   return (
     <>
@@ -43,6 +58,7 @@ export function SiteNav({
           </>
         ) : (
           <>
+            {cartLink}
             <Link href={dashboardHref} className="hover:text-neutral-900">
               Dashboard
             </Link>
@@ -104,13 +120,24 @@ export function SiteNav({
                 </Link>
               </>
             ) : (
-              <Link
-                href={dashboardHref}
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-2.5 hover:bg-neutral-100"
-              >
-                Dashboard
-              </Link>
+              <>
+                {showCart && (
+                  <Link
+                    href="/cart"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-2 py-2.5 hover:bg-neutral-100"
+                  >
+                    Cart{!!cartCount && ` (${cartCount})`}
+                  </Link>
+                )}
+                <Link
+                  href={dashboardHref}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-2 py-2.5 hover:bg-neutral-100"
+                >
+                  Dashboard
+                </Link>
+              </>
             )}
           </nav>
         </div>

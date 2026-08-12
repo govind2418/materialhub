@@ -2,6 +2,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { SiteHeader } from "@/components/site-header";
 import {
   assignDistributor,
@@ -265,7 +266,7 @@ export default async function ManufacturerDashboard() {
                   <div key={e.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
                     <div>
                       <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-                        {e.type === "rfq" ? "RFQ" : e.type === "restock" ? "Restock" : "Sample"}
+                        {enquiryTypeLabel(e.type)}
                       </span>
                       {e.message && <p className="mt-1 text-sm">{e.message}</p>}
                       <p className="mt-1 text-xs text-neutral-400">
@@ -454,6 +455,13 @@ export default async function ManufacturerDashboard() {
               <input
                 name="panelSizes"
                 placeholder="Panel sizes (comma separated)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <input
+                name="pricePerSheet"
+                type="number"
+                min="0"
+                placeholder="Price per sheet (₹)"
                 className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
               />
               <input

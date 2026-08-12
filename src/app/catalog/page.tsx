@@ -156,6 +156,7 @@ export default async function CatalogPage({
                 imageUrl: p.imageUrl,
                 collection: p.collection,
                 verificationStatus: p.verificationStatus,
+                pricePerSheet: p.pricePerSheet,
               }))}
               projectId={targetProject?.id}
             />

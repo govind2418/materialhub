@@ -13,6 +13,7 @@ type Product = {
   imageUrl: string;
   collection: string | null;
   verificationStatus?: string;
+  pricePerSheet?: number | null;
 };
 
 export function SelectableProductGrid({
@@ -81,6 +82,12 @@ export function SelectableProductGrid({
                     {p.code ? `${p.code} · ` : ""}
                     {p.collection}
                   </p>
+                  {p.pricePerSheet != null && (
+                    <p className="mt-1 text-sm font-medium text-neutral-900">
+                      ₹{p.pricePerSheet.toLocaleString("en-IN")}
+                      <span className="text-xs font-normal text-neutral-500">/sheet</span>
+                    </p>
+                  )}
                 </div>
               </Link>
             </div>

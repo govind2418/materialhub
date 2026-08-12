@@ -32,6 +32,8 @@ export const enquiryTypeEnum = pgEnum("enquiry_type", [
   "sample_request",
   "rfq",
   "restock",
+  "order",
+  "general_enquiry",
 ]);
 
 export const teamMemberRoleEnum = pgEnum("team_member_role", [
@@ -114,6 +116,19 @@ export const products = pgTable("products", {
   verificationStatus: verificationStatusEnum("verification_status")
     .default("pending")
     .notNull(),
+  pricePerSheet: integer("price_per_sheet"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const cartItems = pgTable("cart_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  quantity: integer("quantity").default(1).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

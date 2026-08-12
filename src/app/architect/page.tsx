@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { SiteHeader } from "@/components/site-header";
 import { createProject, generateShareLink, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
 import { generateRfq } from "./rfq-actions";
@@ -29,7 +30,7 @@ export default async function ArchitectDashboard() {
   const rfqGroups = new Map<string, typeof myEnquiries>();
   const standaloneEnquiries: typeof myEnquiries = [];
   for (const e of myEnquiries) {
-    if (e.type === "rfq" && e.rfqId) {
+    if ((e.type === "rfq" || e.type === "order") && e.rfqId) {
       const list = rfqGroups.get(e.rfqId) ?? [];
       list.push(e);
       rfqGroups.set(e.rfqId, list);
@@ -244,17 +245,18 @@ export default async function ArchitectDashboard() {
         )}
 
         <section className="mt-14">
-          <h2 className="mb-4 text-lg font-semibold">RFQs sent</h2>
+          <h2 className="mb-4 text-lg font-semibold">RFQs &amp; orders sent</h2>
           {rfqGroups.size === 0 ? (
             <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
-              No RFQs yet. Generate one from a project&apos;s shortlist above.
+              No RFQs or multi-supplier orders yet. Generate an RFQ from a project&apos;s
+              shortlist, or submit a cart with products from more than one manufacturer.
             </p>
           ) : (
             <div className="flex flex-col gap-3">
               {Array.from(rfqGroups.entries()).map(([rfqId, group]) => (
                 <div key={rfqId} className="rounded-xl border border-neutral-200 bg-white p-4">
                   <p className="text-sm font-medium">
-                    RFQ
+                    {enquiryTypeLabel(group[0].type)}
                     {group.length > 1 && (
                       <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
                         Split across {group.length} suppliers
@@ -280,7 +282,7 @@ export default async function ArchitectDashboard() {
         </section>
 
         <section className="mt-14">
-          <h2 className="mb-4 text-lg font-semibold">Sample requests &amp; restocks</h2>
+          <h2 className="mb-4 text-lg font-semibold">Samples, orders &amp; enquiries</h2>
           {standaloneEnquiries.length === 0 ? (
             <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
               No enquiries yet.
@@ -293,7 +295,7 @@ export default async function ArchitectDashboard() {
                     <p className="text-sm font-medium">
                       {manufacturersById.get(e.manufacturerId)?.name}
                       <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-                        {e.type === "restock" ? "Restock" : "Sample"}
+                        {enquiryTypeLabel(e.type)}
                       </span>
                     </p>
                     {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}

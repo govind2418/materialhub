@@ -8,6 +8,7 @@ export function ProductCard({
   imageUrl,
   collection,
   verificationStatus,
+  pricePerSheet,
 }: {
   slug: string;
   name: string;
@@ -15,6 +16,7 @@ export function ProductCard({
   imageUrl: string;
   collection: string | null;
   verificationStatus?: string;
+  pricePerSheet?: number | null;
 }) {
   return (
     <Link
@@ -41,6 +43,12 @@ export function ProductCard({
           {code ? `${code} · ` : ""}
           {collection}
         </p>
+        {pricePerSheet != null && (
+          <p className="mt-1 text-sm font-medium text-neutral-900">
+            ₹{pricePerSheet.toLocaleString("en-IN")}
+            <span className="text-xs font-normal text-neutral-500">/sheet</span>
+          </p>
+        )}
       </div>
     </Link>
   );

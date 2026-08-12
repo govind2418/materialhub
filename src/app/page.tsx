@@ -216,6 +216,7 @@ export default async function Home() {
                 imageUrl={p.imageUrl}
                 collection={p.collection}
                 verificationStatus={p.verificationStatus}
+                pricePerSheet={p.pricePerSheet}
               />
             ))}
           </div>
