@@ -58,12 +58,26 @@ export default async function ManufacturerDashboard() {
       })
     : [];
 
-  const enquiryCountByProduct = new Map<string, number>();
+  const enquiriesById = new Map(myEnquiries.map((e) => [e.id, e]));
+  const sampleRequestedByProduct = new Map<string, number>();
+  const rfqByProduct = new Map<string, number>();
+  const contactedByProduct = new Map<string, number>();
+  const quotedByProduct = new Map<string, number>();
   for (const item of enquiryItemsByEnquiry) {
-    enquiryCountByProduct.set(
-      item.productId,
-      (enquiryCountByProduct.get(item.productId) ?? 0) + 1
-    );
+    const enquiry = enquiriesById.get(item.enquiryId);
+    if (!enquiry) continue;
+    if (enquiry.type === "sample_request") {
+      sampleRequestedByProduct.set(item.productId, (sampleRequestedByProduct.get(item.productId) ?? 0) + 1);
+    }
+    if (enquiry.type === "rfq") {
+      rfqByProduct.set(item.productId, (rfqByProduct.get(item.productId) ?? 0) + 1);
+    }
+    if (enquiry.lastContactedAt) {
+      contactedByProduct.set(item.productId, (contactedByProduct.get(item.productId) ?? 0) + 1);
+    }
+    if (enquiry.quotedPrice != null) {
+      quotedByProduct.set(item.productId, (quotedByProduct.get(item.productId) ?? 0) + 1);
+    }
   }
 
   const analyticsRows = [...myProducts]
@@ -75,6 +89,17 @@ export default async function ManufacturerDashboard() {
   });
 
   const productIds = myProducts.map((p) => p.id);
+
+  const shortlistedItems = productIds.length
+    ? await db.query.moodBoardItems.findMany({
+        where: (i, { inArray }) => inArray(i.productId, productIds),
+      })
+    : [];
+  const shortlistedByProduct = new Map<string, number>();
+  for (const item of shortlistedItems) {
+    shortlistedByProduct.set(item.productId, (shortlistedByProduct.get(item.productId) ?? 0) + 1);
+  }
+
   const relatedLinks = productIds.length
     ? await db.query.relatedProducts.findMany({
         where: (r, { inArray }) => inArray(r.productId, productIds),
@@ -360,19 +385,23 @@ export default async function ManufacturerDashboard() {
               </div>
             )}
 
-            <h2 className="mb-4 mt-14 text-lg font-semibold">Analytics</h2>
+            <h2 className="mb-4 mt-14 text-lg font-semibold">Lead funnel</h2>
             {analyticsRows.length === 0 ? (
               <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
                 No data yet. Views and enquiries will show up here once buyers start browsing.
               </p>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
-                <table className="w-full text-left text-sm">
+              <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
+                <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-neutral-200 text-xs uppercase tracking-wide text-neutral-500">
                       <th className="px-4 py-2.5 font-medium">Product</th>
-                      <th className="px-4 py-2.5 font-medium">Views</th>
-                      <th className="px-4 py-2.5 font-medium">Enquiries</th>
+                      <th className="px-4 py-2.5 font-medium">Viewed</th>
+                      <th className="px-4 py-2.5 font-medium">Shortlisted</th>
+                      <th className="px-4 py-2.5 font-medium">Sample req&apos;d</th>
+                      <th className="px-4 py-2.5 font-medium">RFQ&apos;d</th>
+                      <th className="px-4 py-2.5 font-medium">Contacted</th>
+                      <th className="px-4 py-2.5 font-medium">Quoted</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
@@ -384,7 +413,19 @@ export default async function ManufacturerDashboard() {
                         </td>
                         <td className="px-4 py-2.5 text-neutral-700">{p.viewCount}</td>
                         <td className="px-4 py-2.5 text-neutral-700">
-                          {enquiryCountByProduct.get(p.id) ?? 0}
+                          {shortlistedByProduct.get(p.id) ?? 0}
+                        </td>
+                        <td className="px-4 py-2.5 text-neutral-700">
+                          {sampleRequestedByProduct.get(p.id) ?? 0}
+                        </td>
+                        <td className="px-4 py-2.5 text-neutral-700">
+                          {rfqByProduct.get(p.id) ?? 0}
+                        </td>
+                        <td className="px-4 py-2.5 text-neutral-700">
+                          {contactedByProduct.get(p.id) ?? 0}
+                        </td>
+                        <td className="px-4 py-2.5 text-neutral-700">
+                          {quotedByProduct.get(p.id) ?? 0}
                         </td>
                       </tr>
                     ))}

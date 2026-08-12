@@ -49,6 +49,7 @@ export default async function ProductDetailPage({
   }
 
   let territoryContact: { name: string; role: string; phone: string | null; email: string } | null = null;
+  let availableNearProjectCity: string | null = null;
   if (isArchitect && user) {
     const recentProject = await db.query.projects.findFirst({
       where: (p, { eq }) => eq(p.architectUserId, user.id),
@@ -77,6 +78,22 @@ export default async function ProductDetailPage({
           phone: match.phone,
           email: match.email,
         };
+      }
+
+      const productDistributorLinks = await db.query.productDistributors.findMany({
+        where: (d, { eq }) => eq(d.productId, product.id),
+      });
+      const distributorUserIds = productDistributorLinks.map((d) => d.distributorUserId);
+      const nearbyDistributors = distributorUserIds.length
+        ? await db.query.users.findMany({
+            where: (u, { inArray }) => inArray(u.id, distributorUserIds),
+          })
+        : [];
+      const nearbyMatch = nearbyDistributors.find(
+        (u) => u.city?.toLowerCase() === recentProject.city!.toLowerCase()
+      );
+      if (nearbyMatch?.city) {
+        availableNearProjectCity = nearbyMatch.city;
       }
     }
   }
@@ -203,6 +220,12 @@ export default async function ProductDetailPage({
             Last updated {new Date(product.updatedAt).toLocaleDateString()}
           </p>
 
+          {availableNearProjectCity && (
+            <p className="mt-3 rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
+              📍 Available from a distributor in {availableNearProjectCity}
+            </p>
+          )}
+
           {territoryContact && (
             <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
               <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
@@ -217,16 +240,24 @@ export default async function ProductDetailPage({
             </div>
           )}
 
-          {product.installationGuideUrl && (
-            <a
-              href={product.installationGuideUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block text-sm font-medium text-terracotta-600 hover:text-terracotta-700"
+          <div className="mt-4 flex flex-wrap gap-4">
+            {product.installationGuideUrl && (
+              <a
+                href={product.installationGuideUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-sm font-medium text-terracotta-600 hover:text-terracotta-700"
+              >
+                Installation guide ↗
+              </a>
+            )}
+            <Link
+              href={`/catalog/${product.slug}/spec`}
+              className="inline-block text-sm font-medium text-terracotta-600 hover:text-terracotta-700"
             >
-              Installation guide ↗
-            </a>
-          )}
+              Generate specification ↗
+            </Link>
+          </div>
 
           <div className="mt-6 flex flex-col gap-3">
             {isArchitect ? (
