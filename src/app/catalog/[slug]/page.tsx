@@ -148,6 +148,16 @@ export default async function ProductDetailPage({
   }
   const hasAnyAlternatives = relatedGroups.some((g) => g.products.length > 0);
 
+  const featuredInLinks = await db.query.projectReferenceProducts.findMany({
+    where: (rp, { eq }) => eq(rp.productId, product.id),
+  });
+  const featuredIn = featuredInLinks.length
+    ? await db.query.projectReferences.findMany({
+        where: (r, { inArray }) => inArray(r.id, featuredInLinks.map((l) => l.projectReferenceId)),
+        orderBy: (r, { desc }) => desc(r.createdAt),
+      })
+    : [];
+
   const specs: [string, string | null][] = [
     ["Code", product.code],
     ["Collection", product.collection],
@@ -335,6 +345,32 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {featuredIn.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-4 text-sm font-medium text-neutral-700">Featured in</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {featuredIn.map((ref) => (
+              <div key={ref.id} className="flex gap-3 rounded-xl border border-neutral-200 bg-white p-4">
+                {ref.imageUrl && (
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                    <Image src={ref.imageUrl} alt={ref.title} fill className="object-cover" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">{ref.title}</p>
+                  {ref.category && (
+                    <p className="text-xs text-neutral-500">{ref.category}</p>
+                  )}
+                  {ref.description && (
+                    <p className="mt-1 text-xs text-neutral-500">{ref.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {hasAnyAlternatives && (
         <details className="mt-10">

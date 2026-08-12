@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
 import { createProject, generateShareLink, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
 import { generateRfq } from "./rfq-actions";
+import { uploadBoq } from "./boq-actions";
 
 export default async function ArchitectDashboard() {
   const user = await getCurrentDbUser();
@@ -116,6 +117,22 @@ export default async function ArchitectDashboard() {
             className="rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
           >
             New project
+          </button>
+        </form>
+
+        <form action={uploadBoq} className="mt-3 flex items-center gap-2">
+          <input
+            type="file"
+            name="file"
+            accept=".csv,.xlsx,.xls"
+            required
+            className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs"
+          />
+          <button
+            type="submit"
+            className="rounded-lg border border-terracotta-500 px-4 py-2 text-sm font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
+          >
+            Upload BOQ (CSV/XLSX)
           </button>
         </form>
 

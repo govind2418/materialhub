@@ -13,6 +13,8 @@ import {
   productDistributors,
   manufacturerTeamMembers,
   productEditRequests,
+  projectReferences,
+  projectReferenceProducts,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -394,6 +396,76 @@ export async function submitQuote(formData: FormData): Promise<void> {
     .where(eq(enquiries.id, enquiryId));
   revalidatePath("/manufacturer");
   revalidatePath("/architect");
+}
+
+export async function createProjectReference(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim() || null;
+  const productIds = formData.getAll("productIds").map(String).filter(Boolean);
+
+  if (productIds.length > 0) {
+    const ownedProducts = await db.query.products.findMany({
+      where: (p, { and, eq, inArray }) =>
+        and(eq(p.manufacturerId, manufacturer.id), inArray(p.id, productIds)),
+    });
+    if (ownedProducts.length !== productIds.length) return;
+  }
+
+  const file = formData.get("image") as File | null;
+  let imageUrl: string | null = null;
+  if (file && file.size > 0) {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const filename = `ref-${manufacturer.slug}-${Date.now()}.${ext}`;
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(path.join(uploadDir, filename), bytes);
+    imageUrl = `/uploads/${filename}`;
+  }
+
+  const [reference] = await db
+    .insert(projectReferences)
+    .values({
+      title,
+      description,
+      imageUrl,
+      category,
+      createdByManufacturerId: manufacturer.id,
+    })
+    .returning();
+
+  if (productIds.length > 0) {
+    await db
+      .insert(projectReferenceProducts)
+      .values(productIds.map((productId) => ({ projectReferenceId: reference.id, productId })));
+  }
+
+  revalidatePath("/manufacturer");
+}
+
+export async function deleteProjectReference(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const referenceId = String(formData.get("referenceId"));
+  const reference = await db.query.projectReferences.findFirst({
+    where: (r, { eq }) => eq(r.id, referenceId),
+  });
+  if (!reference || reference.createdByManufacturerId !== manufacturer.id) return;
+
+  await db.delete(projectReferences).where(eq(projectReferences.id, referenceId));
+  revalidatePath("/manufacturer");
 }
 
 export async function markLeadContacted(formData: FormData): Promise<void> {

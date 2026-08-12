@@ -6,7 +6,7 @@ import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
-import { approveEditRequest, rejectEditRequest, togglePaidStatus } from "./actions";
+import { approveEditRequest, deleteProjectReferenceAdmin, rejectEditRequest, togglePaidStatus } from "./actions";
 
 const FIELD_LABEL: Record<string, string> = {
   name: "Name",
@@ -71,6 +71,18 @@ export default async function AdminPage({
       orderBy: (r, { desc }) => desc(r.createdAt),
     }),
   ]);
+
+  const [allProjectReferences, allReferenceProductLinks] = await Promise.all([
+    db.query.projectReferences.findMany({ orderBy: (r, { desc }) => desc(r.createdAt) }),
+    db.query.projectReferenceProducts.findMany(),
+  ]);
+  const referenceProductCountAdmin = new Map<string, number>();
+  for (const link of allReferenceProductLinks) {
+    referenceProductCountAdmin.set(
+      link.projectReferenceId,
+      (referenceProductCountAdmin.get(link.projectReferenceId) ?? 0) + 1
+    );
+  }
 
   const productsById = new Map(allProducts.map((p) => [p.id, p]));
   const manufacturersById = new Map(allManufacturers.map((m) => [m.id, m]));
@@ -392,6 +404,40 @@ export default async function AdminPage({
                   </div>
                 );
               })}
+            </div>
+          )}
+        </section>
+
+        {/* Project references */}
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">
+            Project references ({allProjectReferences.length})
+          </h2>
+          {allProjectReferences.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No curated case studies yet.
+            </p>
+          ) : (
+            <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
+              {allProjectReferences.map((r) => (
+                <div key={r.id} className="flex items-center justify-between gap-4 p-4">
+                  <div>
+                    <p className="text-sm font-medium">{r.title}</p>
+                    <p className="text-xs text-neutral-500">
+                      {r.createdByManufacturerId
+                        ? manufacturersById.get(r.createdByManufacturerId)?.name ?? "Unknown manufacturer"
+                        : "—"}{" "}
+                      · {referenceProductCountAdmin.get(r.id) ?? 0} product
+                      {(referenceProductCountAdmin.get(r.id) ?? 0) === 1 ? "" : "s"} tagged
+                      {r.category && ` · ${r.category}`}
+                    </p>
+                  </div>
+                  <form action={deleteProjectReferenceAdmin}>
+                    <input type="hidden" name="referenceId" value={r.id} />
+                    <button className="text-xs text-neutral-400 hover:text-red-600">Delete</button>
+                  </form>
+                </div>
+              ))}
             </div>
           )}
         </section>

@@ -293,3 +293,41 @@ export const manufacturerTeamMembers = pgTable("manufacturer_team_members", {
   status: teamMemberStatusEnum("status").default("invited").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const projectReferences = pgTable("project_references", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  category: text("category"),
+  createdByManufacturerId: uuid("created_by_manufacturer_id").references(() => manufacturers.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const projectReferenceProducts = pgTable("project_reference_products", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectReferenceId: uuid("project_reference_id")
+    .references(() => projectReferences.id, { onDelete: "cascade" })
+    .notNull(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+});
+
+export type BoqRow = {
+  description: string;
+  quantity: number;
+  matchedProductId: string | null;
+};
+
+export const boqUploads = pgTable("boq_uploads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  architectUserId: uuid("architect_user_id")
+    .references(() => users.id)
+    .notNull(),
+  filename: text("filename"),
+  rows: jsonb("rows").$type<BoqRow[]>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

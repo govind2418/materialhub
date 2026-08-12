@@ -9,7 +9,9 @@ import {
   assignDistributor,
   assignLead,
   createProduct,
+  createProjectReference,
   deleteProduct,
+  deleteProjectReference,
   inviteTeamMember,
   linkRelatedProduct,
   markLeadContacted,
@@ -130,6 +132,26 @@ export default async function ManufacturerDashboard() {
       })
     : [];
   const salesRepUsersById = new Map(salesRepUsers.map((u) => [u.id, u]));
+
+  const myProjectReferences = manufacturer
+    ? await db.query.projectReferences.findMany({
+        where: (r, { eq }) => eq(r.createdByManufacturerId, manufacturer.id),
+        orderBy: (r, { desc }) => desc(r.createdAt),
+      })
+    : [];
+  const referenceProductLinks = myProjectReferences.length
+    ? await db.query.projectReferenceProducts.findMany({
+        where: (rp, { inArray }) =>
+          inArray(rp.projectReferenceId, myProjectReferences.map((r) => r.id)),
+      })
+    : [];
+  const referenceProductCount = new Map<string, number>();
+  for (const link of referenceProductLinks) {
+    referenceProductCount.set(
+      link.projectReferenceId,
+      (referenceProductCount.get(link.projectReferenceId) ?? 0) + 1
+    );
+  }
 
   return (
     <div className="flex min-h-full flex-col">
@@ -668,6 +690,75 @@ export default async function ManufacturerDashboard() {
                 ))}
               </div>
             )}
+
+            <h2 className="mb-4 mt-14 text-lg font-semibold">Project references</h2>
+            <p className="mb-4 -mt-2 text-xs text-neutral-500">
+              Curated case studies (e.g. &ldquo;Taj Hotel Lobby&rdquo;) tagged with your
+              products — shown as inspiration on the product and catalog pages.
+            </p>
+            {myProjectReferences.length === 0 ? (
+              <p className="mb-4 rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+                No project references yet.
+              </p>
+            ) : (
+              <div className="mb-4 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
+                {myProjectReferences.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-medium">{r.title}</p>
+                      <p className="text-xs text-neutral-500">
+                        {referenceProductCount.get(r.id) ?? 0} product
+                        {(referenceProductCount.get(r.id) ?? 0) === 1 ? "" : "s"} tagged
+                        {r.category && ` · ${r.category}`}
+                      </p>
+                    </div>
+                    <form action={deleteProjectReference}>
+                      <input type="hidden" name="referenceId" value={r.id} />
+                      <button className="text-xs text-neutral-400 hover:text-red-600">Delete</button>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            )}
+            <form
+              action={createProjectReference}
+              className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4"
+            >
+              <input
+                name="title"
+                required
+                placeholder="Case study title (e.g. Taj Hotel Lobby)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <textarea
+                name="description"
+                rows={2}
+                placeholder="Short description"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <input
+                name="category"
+                placeholder="Category tag (e.g. Hospitality)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              {myProducts.length > 0 && (
+                <div className="max-h-32 overflow-y-auto rounded-lg border border-neutral-300 p-2 text-xs">
+                  {myProducts.map((p) => (
+                    <label key={p.id} className="flex items-center gap-2 py-1">
+                      <input type="checkbox" name="productIds" value={p.id} />
+                      {p.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+              <input type="file" name="image" accept="image/*" className="text-xs" />
+              <button
+                type="submit"
+                className="mt-1 self-start rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
+              >
+                Add project reference
+              </button>
+            </form>
           </section>
 
           <aside className="h-fit rounded-xl border border-neutral-200 bg-white p-5">

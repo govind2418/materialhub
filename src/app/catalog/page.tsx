@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/db";
 import { SelectableProductGrid } from "@/components/selectable-product-grid";
@@ -61,6 +62,24 @@ export default async function CatalogPage({
 
   const current: CatalogSearchParams = { category, collection, finish, q, project: projectId };
 
+  let inspiration: Awaited<ReturnType<typeof db.query.projectReferences.findMany>> = [];
+  if (category) {
+    const productIdsInCategory = allProducts.filter((p) => p.category === category).map((p) => p.id);
+    if (productIdsInCategory.length > 0) {
+      const taggedLinks = await db.query.projectReferenceProducts.findMany({
+        where: (rp, { inArray }) => inArray(rp.productId, productIdsInCategory),
+      });
+      const referenceIds = [...new Set(taggedLinks.map((l) => l.projectReferenceId))];
+      if (referenceIds.length > 0) {
+        inspiration = await db.query.projectReferences.findMany({
+          where: (r, { inArray }) => inArray(r.id, referenceIds),
+          orderBy: (r, { desc }) => desc(r.createdAt),
+          limit: 3,
+        });
+      }
+    }
+  }
+
   const user = await getCurrentDbUser();
   let targetProject = null;
   if (user?.role === "architect" && projectId) {
@@ -86,12 +105,44 @@ export default async function CatalogPage({
             </Link>
           </div>
         )}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold">Catalog</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {filtered.length} products from verified manufacturers.
-            {query && <> Showing results for &ldquo;{q}&rdquo;.</>}
-          </p>
+        {inspiration.length > 0 && (
+          <div className="mb-6 rounded-xl border border-neutral-200 bg-neutral-100 p-4">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
+              Inspiration in {category}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {inspiration.map((ref) => (
+                <div key={ref.id} className="flex gap-2 rounded-lg bg-white p-2.5">
+                  {ref.imageUrl && (
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-neutral-100">
+                      <Image src={ref.imageUrl} alt={ref.title} fill className="object-cover" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-neutral-900">{ref.title}</p>
+                    {ref.description && (
+                      <p className="truncate text-[11px] text-neutral-500">{ref.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold">Catalog</h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              {filtered.length} products from verified manufacturers.
+              {query && <> Showing results for &ldquo;{q}&rdquo;.</>}
+            </p>
+          </div>
+          <Link
+            href="/catalog/find-alternative"
+            className="shrink-0 rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:border-terracotta-400 hover:text-terracotta-600"
+          >
+            Find an Indian alternative →
+          </Link>
         </div>
 
         <div className="mb-6 flex flex-wrap gap-2">

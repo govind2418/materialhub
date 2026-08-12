@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin";
 import { recordProductVersion } from "@/lib/product-versions";
 import { db } from "@/db";
-import { enquiries, products, productEditRequests } from "@/db/schema";
+import { enquiries, products, productEditRequests, projectReferences } from "@/db/schema";
 
 async function requireAdmin() {
   const user = await currentUser();
@@ -81,6 +81,15 @@ export async function rejectEditRequest(formData: FormData): Promise<void> {
     await db.update(products).set({ needsReview: false }).where(eq(products.id, request.productId));
   }
 
+  revalidatePath("/admin");
+  revalidatePath("/manufacturer");
+}
+
+export async function deleteProjectReferenceAdmin(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const referenceId = String(formData.get("referenceId"));
+  await db.delete(projectReferences).where(eq(projectReferences.id, referenceId));
   revalidatePath("/admin");
   revalidatePath("/manufacturer");
 }
