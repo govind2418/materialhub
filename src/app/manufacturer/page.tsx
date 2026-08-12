@@ -24,7 +24,6 @@ import {
   updateProduct,
   updateSampleStatus,
 } from "./actions";
-import { uploadCatalogForExtraction } from "./catalog-import-actions";
 
 const RELATION_LABEL: Record<string, string> = {
   alternative_to: "Alternative",
@@ -178,33 +177,8 @@ export default async function ManufacturerDashboard() {
           Manage your catalog and respond to enquiries.
         </p>
 
-        <details className="mt-4 rounded-xl border border-terracotta-200 bg-terracotta-50">
-          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-terracotta-800">
-            ✨ Upload a catalog and let AI digitize it
-          </summary>
-          <div className="border-t border-terracotta-200 p-4">
-            <p className="mb-3 text-xs text-terracotta-700">
-              Upload a PDF or photo of your product catalog/spec sheet — AI reads it and drafts
-              structured product records for you to review before anything is added to your
-              live catalog. Only fields actually printed in the catalog are filled in.
-            </p>
-            <form action={uploadCatalogForExtraction} className="flex flex-wrap items-center gap-2">
-              <input
-                type="file"
-                name="file"
-                accept=".pdf,image/png,image/jpeg,image/webp"
-                required
-                className="min-w-0 flex-1 rounded-lg border border-terracotta-300 bg-white px-3 py-2 text-xs"
-              />
-              <button
-                type="submit"
-                className="rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
-              >
-                Extract products
-              </button>
-            </form>
-          </div>
-        </details>
+        {/* AI catalog upload is temporarily disabled — needs a Vercel AI Gateway
+            card-verified account before it can run. See catalog-import-actions.ts. */}
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
           <section>
