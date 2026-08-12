@@ -86,9 +86,17 @@ export default async function ArchitectDashboard() {
               Your projects, shortlists, and enquiries.
             </p>
           </div>
-          <Link href="/catalog" className="text-sm font-medium text-terracotta-600 hover:text-terracotta-700">
-            Browse catalog →
-          </Link>
+          <div className="flex flex-col items-end gap-1">
+            <Link href="/catalog" className="text-sm font-medium text-terracotta-600 hover:text-terracotta-700">
+              Browse catalog →
+            </Link>
+            <Link
+              href="/architect/decision-assistant"
+              className="text-sm font-medium text-neutral-500 hover:text-terracotta-600"
+            >
+              Not sure what to pick? Try the decision assistant →
+            </Link>
+          </div>
         </div>
 
         <form action={createProject} className="mt-8 flex gap-2">
@@ -264,6 +272,44 @@ export default async function ArchitectDashboard() {
                       </span>
                     )}
                   </p>
+                  {group.some((e) => e.quotedPrice != null) && (
+                    <div className="mt-3 overflow-x-auto rounded-lg border border-neutral-200">
+                      <table className="w-full min-w-[500px] text-left text-xs">
+                        <thead>
+                          <tr className="border-b border-neutral-200 bg-neutral-50 uppercase tracking-wide text-neutral-500">
+                            <th className="px-3 py-2 font-medium">Supplier</th>
+                            <th className="px-3 py-2 font-medium">Price</th>
+                            <th className="px-3 py-2 font-medium">Delivery</th>
+                            <th className="px-3 py-2 font-medium">Freight</th>
+                            <th className="px-3 py-2 font-medium">Payment terms</th>
+                            <th className="px-3 py-2 font-medium">Valid until</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          {group.map((e) => (
+                            <tr key={e.id}>
+                              <td className="px-3 py-2 font-medium text-neutral-900">
+                                {manufacturersById.get(e.manufacturerId)?.name}
+                              </td>
+                              <td className="px-3 py-2 text-neutral-700">
+                                {e.quotedPrice != null ? `₹${e.quotedPrice.toLocaleString("en-IN")}` : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-neutral-700">
+                                {e.quotedDeliveryDays != null ? `${e.quotedDeliveryDays} days` : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-neutral-700">
+                                {e.freightCost != null ? `₹${e.freightCost.toLocaleString("en-IN")}` : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-neutral-700">{e.paymentTerms ?? "—"}</td>
+                              <td className="px-3 py-2 text-neutral-700">
+                                {e.validUntil ? new Date(e.validUntil).toLocaleDateString() : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                   <div className="mt-2 divide-y divide-neutral-100">
                     {group.map((e) => (
                       <details key={e.id} className="py-1.5">

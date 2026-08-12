@@ -14,10 +14,19 @@ import {
   linkRelatedProduct,
   markLeadContacted,
   removeTeamMember,
+  submitQuote,
   toggleProductVerification,
   updateEnquiryStatus,
+  updateProduct,
   updateSampleStatus,
 } from "./actions";
+
+const RELATION_LABEL: Record<string, string> = {
+  alternative_to: "Alternative",
+  compatible_with: "Compatible",
+  used_with: "Used with",
+  similar_to: "Similar",
+};
 
 export default async function ManufacturerDashboard() {
   const user = await getCurrentDbUser();
@@ -118,8 +127,8 @@ export default async function ManufacturerDashboard() {
                 {myProducts.map((p) => {
                   const related = relatedLinks
                     .filter((r) => r.productId === p.id)
-                    .map((r) => productsById.get(r.relatedProductId))
-                    .filter(Boolean);
+                    .map((r) => ({ product: productsById.get(r.relatedProductId), relationType: r.relationType }))
+                    .filter((r) => r.product);
                   const linkedDistributors = distributorLinks
                     .filter((d) => d.productId === p.id)
                     .map((d) => distributorUsersById.get(d.distributorUserId))
@@ -133,6 +142,11 @@ export default async function ManufacturerDashboard() {
                         {p.verificationStatus !== "pending" && (
                           <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-green-700">
                             ✓ Verified
+                          </span>
+                        )}
+                        {p.needsReview && (
+                          <span className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            Edit pending review
                           </span>
                         )}
                       </div>
@@ -154,9 +168,121 @@ export default async function ManufacturerDashboard() {
                           </form>
                         </div>
 
+                        <details className="mt-2">
+                          <summary className="cursor-pointer text-xs font-medium text-terracotta-600 hover:text-terracotta-700">
+                            Edit
+                          </summary>
+                          <form action={updateProduct} className="mt-2 flex flex-col gap-1.5">
+                            <input type="hidden" name="productId" value={p.id} />
+                            {p.verificationStatus !== "pending" && (
+                              <p className="text-[10px] text-neutral-500">
+                                This product is verified — changes will be queued for review
+                                instead of applying instantly.
+                              </p>
+                            )}
+                            <input
+                              name="name"
+                              defaultValue={p.name}
+                              placeholder="Product name"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="code"
+                              defaultValue={p.code ?? ""}
+                              placeholder="Product code"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="collection"
+                              defaultValue={p.collection ?? ""}
+                              placeholder="Collection"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="category"
+                              defaultValue={p.category ?? ""}
+                              placeholder="Category"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="woodSpecie"
+                              defaultValue={p.woodSpecie ?? ""}
+                              placeholder="Wood specie / material"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="finish"
+                              defaultValue={p.finish ?? ""}
+                              placeholder="Finish"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="panelSizes"
+                              defaultValue={p.panelSizes?.join(", ") ?? ""}
+                              placeholder="Panel sizes (comma separated)"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="pricePerSheet"
+                              type="number"
+                              min="0"
+                              defaultValue={p.pricePerSheet ?? ""}
+                              placeholder="Price per sheet (₹)"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="certifications"
+                              defaultValue={p.certifications?.join(", ") ?? ""}
+                              placeholder="Certifications (comma separated)"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="installationGuideUrl"
+                              type="url"
+                              defaultValue={p.installationGuideUrl ?? ""}
+                              placeholder="Installation guide URL"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="fireRating"
+                              defaultValue={p.fireRating ?? ""}
+                              placeholder="Fire rating"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <select
+                              name="moistureResistance"
+                              defaultValue={p.moistureResistance ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-700"
+                            >
+                              <option value="">Moisture resistance — not set</option>
+                              <option value="Low">Low</option>
+                              <option value="Standard">Standard</option>
+                              <option value="High">High</option>
+                            </select>
+                            <select
+                              name="maintenanceLevel"
+                              defaultValue={p.maintenanceLevel ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-700"
+                            >
+                              <option value="">Maintenance level — not set</option>
+                              <option value="Low">Low</option>
+                              <option value="Medium">Medium</option>
+                              <option value="High">High</option>
+                            </select>
+                            <button
+                              type="submit"
+                              className="mt-1 rounded border border-neutral-300 px-2 py-1 text-[11px] font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                            >
+                              Save changes
+                            </button>
+                          </form>
+                        </details>
+
                         {related.length > 0 && (
                           <p className="mt-2 text-[11px] text-neutral-500">
-                            Related: {related.map((r) => r!.name).join(", ")}
+                            {related
+                              .map((r) => `${r.product!.name} (${RELATION_LABEL[r.relationType]})`)
+                              .join(", ")}
                           </p>
                         )}
                         {linkedDistributors.length > 0 && (
@@ -166,7 +292,7 @@ export default async function ManufacturerDashboard() {
                         )}
 
                         {otherProducts.length > 0 && (
-                          <form action={linkRelatedProduct} className="mt-2 flex gap-1">
+                          <form action={linkRelatedProduct} className="mt-2 flex flex-wrap gap-1">
                             <input type="hidden" name="productId" value={p.id} />
                             <select
                               name="relatedProductId"
@@ -179,6 +305,17 @@ export default async function ManufacturerDashboard() {
                               {otherProducts.map((o) => (
                                 <option key={o.id} value={o.id}>
                                   {o.name}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              name="relationType"
+                              defaultValue="alternative_to"
+                              className="rounded border border-neutral-300 px-1 py-1 text-[11px]"
+                            >
+                              {Object.entries(RELATION_LABEL).map(([value, label]) => (
+                                <option key={value} value={value}>
+                                  {label}
                                 </option>
                               ))}
                             </select>
@@ -285,6 +422,71 @@ export default async function ManufacturerDashboard() {
                         <div className="mt-2 max-w-md rounded-lg bg-neutral-50 p-3">
                           <EnquiryDetails enquiryId={e.id} />
                         </div>
+                      </details>
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-xs font-medium text-terracotta-600 hover:text-terracotta-700">
+                          {e.quotedPrice ? "Update quote" : "Send quote"}
+                        </summary>
+                        <form
+                          action={submitQuote}
+                          className="mt-2 grid max-w-md grid-cols-2 gap-2 rounded-lg bg-neutral-50 p-3"
+                        >
+                          <input type="hidden" name="enquiryId" value={e.id} />
+                          <label className="flex flex-col gap-1 text-[11px] text-neutral-500">
+                            Price (₹)
+                            <input
+                              name="quotedPrice"
+                              type="number"
+                              min="0"
+                              defaultValue={e.quotedPrice ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 text-[11px] text-neutral-500">
+                            Delivery (days)
+                            <input
+                              name="quotedDeliveryDays"
+                              type="number"
+                              min="0"
+                              defaultValue={e.quotedDeliveryDays ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 text-[11px] text-neutral-500">
+                            Freight (₹)
+                            <input
+                              name="freightCost"
+                              type="number"
+                              min="0"
+                              defaultValue={e.freightCost ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 text-[11px] text-neutral-500">
+                            Valid until
+                            <input
+                              name="validUntil"
+                              type="date"
+                              defaultValue={e.validUntil ? new Date(e.validUntil).toISOString().slice(0, 10) : ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+                            />
+                          </label>
+                          <label className="col-span-2 flex flex-col gap-1 text-[11px] text-neutral-500">
+                            Payment terms
+                            <input
+                              name="paymentTerms"
+                              placeholder="e.g. 50% advance, balance on delivery"
+                              defaultValue={e.paymentTerms ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-xs"
+                            />
+                          </label>
+                          <button
+                            type="submit"
+                            className="col-span-2 mt-1 rounded border border-neutral-300 px-2 py-1.5 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                          >
+                            Save quote
+                          </button>
+                        </form>
                       </details>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -484,6 +686,31 @@ export default async function ManufacturerDashboard() {
                 placeholder="Installation guide URL"
                 className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
               />
+              <input
+                name="fireRating"
+                placeholder="Fire rating (e.g. Class B, Fire retardant)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <select
+                name="moistureResistance"
+                defaultValue=""
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-700"
+              >
+                <option value="">Moisture resistance — not set</option>
+                <option value="Low">Low moisture resistance</option>
+                <option value="Standard">Standard moisture resistance</option>
+                <option value="High">High moisture resistance</option>
+              </select>
+              <select
+                name="maintenanceLevel"
+                defaultValue=""
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-700"
+              >
+                <option value="">Maintenance level — not set</option>
+                <option value="Low">Low maintenance</option>
+                <option value="Medium">Medium maintenance</option>
+                <option value="High">High maintenance</option>
+              </select>
               <input
                 type="file"
                 name="image"

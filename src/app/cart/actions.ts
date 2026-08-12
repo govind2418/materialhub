@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { getCurrentProductVersionId } from "@/lib/product-versions";
 import { db } from "@/db";
 import { cartItems, enquiries, enquiryItems } from "@/db/schema";
 
@@ -95,9 +96,15 @@ export async function submitCartOrder(): Promise<void> {
       })
       .returning();
 
-    await db
-      .insert(enquiryItems)
-      .values(lines.map((l) => ({ enquiryId: enquiry.id, productId: l.productId, quantity: l.quantity })));
+    const lineValues = await Promise.all(
+      lines.map(async (l) => ({
+        enquiryId: enquiry.id,
+        productId: l.productId,
+        quantity: l.quantity,
+        productVersionId: await getCurrentProductVersionId(l.productId),
+      }))
+    );
+    await db.insert(enquiryItems).values(lineValues);
   }
 
   await db.delete(cartItems).where(eq(cartItems.userId, user.id));

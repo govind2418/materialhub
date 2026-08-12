@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getOrCreateActiveProject, getOrCreateProjectBoard } from "@/lib/projects";
+import { getCurrentProductVersionId } from "@/lib/product-versions";
 import { db } from "@/db";
 import { enquiries, enquiryItems, moodBoardItems, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -32,7 +33,8 @@ export async function addToMoodBoard(productId: string, projectId?: string) {
   });
 
   if (!existingItem) {
-    await db.insert(moodBoardItems).values({ moodBoardId: board.id, productId });
+    const productVersionId = await getCurrentProductVersionId(productId);
+    await db.insert(moodBoardItems).values({ moodBoardId: board.id, productId, productVersionId });
   }
 
   revalidatePath("/architect");
@@ -62,7 +64,8 @@ export async function sendEnquiry(formData: FormData): Promise<void> {
     })
     .returning();
 
-  await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId });
+  const productVersionId = await getCurrentProductVersionId(productId);
+  await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId, productVersionId });
 
   revalidatePath("/architect");
 }
@@ -89,7 +92,8 @@ export async function enquireRepresentative(formData: FormData): Promise<void> {
     })
     .returning();
 
-  await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId });
+  const productVersionId = await getCurrentProductVersionId(productId);
+  await db.insert(enquiryItems).values({ enquiryId: enquiry.id, productId, productVersionId });
 
   revalidatePath("/architect");
 }

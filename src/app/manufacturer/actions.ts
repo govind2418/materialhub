@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { recordProductVersion } from "@/lib/product-versions";
 import { db } from "@/db";
 import {
   products,
@@ -11,6 +12,7 @@ import {
   relatedProducts,
   productDistributors,
   manufacturerTeamMembers,
+  productEditRequests,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -44,6 +46,9 @@ export async function createProduct(formData: FormData): Promise<void> {
   const installationGuideUrl = String(formData.get("installationGuideUrl") ?? "") || null;
   const pricePerSheetRaw = String(formData.get("pricePerSheet") ?? "").trim();
   const pricePerSheet = pricePerSheetRaw ? Number.parseInt(pricePerSheetRaw, 10) : null;
+  const fireRating = String(formData.get("fireRating") ?? "").trim() || null;
+  const moistureResistance = String(formData.get("moistureResistance") ?? "").trim() || null;
+  const maintenanceLevel = String(formData.get("maintenanceLevel") ?? "").trim() || null;
 
   const file = formData.get("image") as File | null;
   let imageUrl = "/products/placeholder.png";
@@ -74,7 +79,93 @@ export async function createProduct(formData: FormData): Promise<void> {
     certifications,
     installationGuideUrl,
     pricePerSheet,
+    fireRating,
+    moistureResistance,
+    maintenanceLevel,
   });
+
+  revalidatePath("/manufacturer");
+}
+
+const EDITABLE_FIELDS = [
+  "name",
+  "code",
+  "collection",
+  "category",
+  "woodSpecie",
+  "finish",
+  "panelSizes",
+  "certifications",
+  "installationGuideUrl",
+  "pricePerSheet",
+  "fireRating",
+  "moistureResistance",
+  "maintenanceLevel",
+] as const;
+
+export async function updateProduct(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const productId = String(formData.get("productId"));
+  const product = await db.query.products.findFirst({
+    where: (p, { eq }) => eq(p.id, productId),
+  });
+  if (!product || product.manufacturerId !== manufacturer.id) return;
+
+  const panelSizesRaw = String(formData.get("panelSizes") ?? "");
+  const certificationsRaw = String(formData.get("certifications") ?? "");
+  const pricePerSheetRaw = String(formData.get("pricePerSheet") ?? "").trim();
+
+  const submitted: Record<string, unknown> = {
+    name: String(formData.get("name") ?? "").trim(),
+    code: String(formData.get("code") ?? "").trim() || null,
+    collection: String(formData.get("collection") ?? "").trim() || null,
+    category: String(formData.get("category") ?? "").trim() || null,
+    woodSpecie: String(formData.get("woodSpecie") ?? "").trim() || null,
+    finish: String(formData.get("finish") ?? "").trim() || null,
+    panelSizes: panelSizesRaw
+      ? panelSizesRaw.split(",").map((s) => s.trim()).filter(Boolean)
+      : null,
+    certifications: certificationsRaw
+      ? certificationsRaw.split(",").map((s) => s.trim()).filter(Boolean)
+      : null,
+    installationGuideUrl: String(formData.get("installationGuideUrl") ?? "").trim() || null,
+    pricePerSheet: pricePerSheetRaw ? Number.parseInt(pricePerSheetRaw, 10) : null,
+    fireRating: String(formData.get("fireRating") ?? "").trim() || null,
+    moistureResistance: String(formData.get("moistureResistance") ?? "").trim() || null,
+    maintenanceLevel: String(formData.get("maintenanceLevel") ?? "").trim() || null,
+  };
+
+  const changedFields: Record<string, unknown> = {};
+  for (const key of EDITABLE_FIELDS) {
+    const next = submitted[key];
+    const current = (product as Record<string, unknown>)[key];
+    const same = Array.isArray(next)
+      ? JSON.stringify(next) === JSON.stringify(current ?? null)
+      : next === current;
+    if (!same) changedFields[key] = next;
+  }
+  if (Object.keys(changedFields).length === 0) return;
+
+  const isAlreadyVerified = product.verificationStatus !== "pending";
+
+  if (isAlreadyVerified) {
+    await db.insert(productEditRequests).values({
+      productId: product.id,
+      proposedChanges: changedFields,
+    });
+    await db.update(products).set({ needsReview: true }).where(eq(products.id, product.id));
+  } else {
+    await db
+      .update(products)
+      .set({ ...changedFields, updatedAt: new Date() })
+      .where(eq(products.id, product.id));
+    await recordProductVersion(product.id);
+  }
 
   revalidatePath("/manufacturer");
 }
@@ -88,6 +179,11 @@ export async function linkRelatedProduct(formData: FormData): Promise<void> {
 
   const productId = String(formData.get("productId"));
   const relatedProductId = String(formData.get("relatedProductId"));
+  const relationType = String(formData.get("relationType") ?? "alternative_to") as
+    | "alternative_to"
+    | "compatible_with"
+    | "used_with"
+    | "similar_to";
   if (!relatedProductId || productId === relatedProductId) return;
 
   const product = await db.query.products.findFirst({
@@ -95,7 +191,7 @@ export async function linkRelatedProduct(formData: FormData): Promise<void> {
   });
   if (!product || product.manufacturerId !== manufacturer.id) return;
 
-  await db.insert(relatedProducts).values({ productId, relatedProductId });
+  await db.insert(relatedProducts).values({ productId, relatedProductId, relationType });
   revalidatePath("/manufacturer");
 }
 
@@ -265,6 +361,39 @@ export async function assignLead(formData: FormData): Promise<void> {
     .set({ assignedSalesRepUserId: salesRepUserId })
     .where(eq(enquiries.id, enquiryId));
   revalidatePath("/manufacturer");
+}
+
+export async function submitQuote(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const enquiryId = String(formData.get("enquiryId"));
+  const enquiry = await db.query.enquiries.findFirst({
+    where: (e, { eq }) => eq(e.id, enquiryId),
+  });
+  if (!enquiry || enquiry.manufacturerId !== manufacturer.id) return;
+
+  const quotedPriceRaw = String(formData.get("quotedPrice") ?? "").trim();
+  const quotedDeliveryDaysRaw = String(formData.get("quotedDeliveryDays") ?? "").trim();
+  const freightCostRaw = String(formData.get("freightCost") ?? "").trim();
+  const paymentTerms = String(formData.get("paymentTerms") ?? "").trim() || null;
+  const validUntilRaw = String(formData.get("validUntil") ?? "").trim();
+
+  await db
+    .update(enquiries)
+    .set({
+      quotedPrice: quotedPriceRaw ? Number.parseInt(quotedPriceRaw, 10) : null,
+      quotedDeliveryDays: quotedDeliveryDaysRaw ? Number.parseInt(quotedDeliveryDaysRaw, 10) : null,
+      freightCost: freightCostRaw ? Number.parseInt(freightCostRaw, 10) : null,
+      paymentTerms,
+      validUntil: validUntilRaw ? new Date(validUntilRaw) : null,
+    })
+    .where(eq(enquiries.id, enquiryId));
+  revalidatePath("/manufacturer");
+  revalidatePath("/architect");
 }
 
 export async function markLeadContacted(formData: FormData): Promise<void> {

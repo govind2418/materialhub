@@ -6,7 +6,29 @@ import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
-import { togglePaidStatus } from "./actions";
+import { approveEditRequest, rejectEditRequest, togglePaidStatus } from "./actions";
+
+const FIELD_LABEL: Record<string, string> = {
+  name: "Name",
+  code: "Code",
+  collection: "Collection",
+  category: "Category",
+  woodSpecie: "Wood specie",
+  finish: "Finish",
+  panelSizes: "Panel sizes",
+  certifications: "Certifications",
+  installationGuideUrl: "Installation guide URL",
+  pricePerSheet: "Price per sheet",
+  fireRating: "Fire rating",
+  moistureResistance: "Moisture resistance",
+  maintenanceLevel: "Maintenance level",
+};
+
+function formatFieldValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (Array.isArray(value)) return value.join(", ") || "—";
+  return String(value);
+}
 
 const ROLE_LABEL: Record<string, string> = {
   manufacturer: "Manufacturer",
@@ -35,6 +57,7 @@ export default async function AdminPage({
     allEnquiryItems,
     allProjects,
     allInventory,
+    pendingEditRequests,
   ] = await Promise.all([
     db.query.users.findMany({ orderBy: (u, { desc }) => desc(u.createdAt) }),
     db.query.manufacturers.findMany(),
@@ -43,6 +66,10 @@ export default async function AdminPage({
     db.query.enquiryItems.findMany(),
     db.query.projects.findMany(),
     db.query.distributorInventory.findMany(),
+    db.query.productEditRequests.findMany({
+      where: (r, { eq }) => eq(r.status, "pending"),
+      orderBy: (r, { desc }) => desc(r.createdAt),
+    }),
   ]);
 
   const productsById = new Map(allProducts.map((p) => [p.id, p]));
@@ -286,6 +313,83 @@ export default async function AdminPage({
                       </form>
                     </div>
                   </details>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Product edit requests */}
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">
+            Pending product edit requests ({pendingEditRequests.length})
+          </h2>
+          {pendingEditRequests.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No edits awaiting review. Edits to already-verified products land here.
+            </p>
+          ) : (
+            <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
+              {pendingEditRequests.map((r) => {
+                const product = productsById.get(r.productId);
+                const manufacturer = product ? manufacturersById.get(product.manufacturerId) : null;
+                const changes = Object.entries(r.proposedChanges);
+                return (
+                  <div key={r.id} className="p-4">
+                    <p className="text-sm font-medium">
+                      {product?.name ?? "Unknown product"}{" "}
+                      <span className="text-neutral-400">·</span> {manufacturer?.name ?? "—"}
+                    </p>
+                    <p className="mt-1 text-xs text-neutral-400">
+                      Requested {new Date(r.createdAt).toLocaleString()}
+                    </p>
+                    <div className="mt-3 overflow-hidden rounded-lg border border-neutral-200">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="border-b border-neutral-200 bg-neutral-50 uppercase tracking-wide text-neutral-500">
+                            <th className="px-3 py-2 font-medium">Field</th>
+                            <th className="px-3 py-2 font-medium">Current</th>
+                            <th className="px-3 py-2 font-medium">Proposed</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          {changes.map(([field, value]) => (
+                            <tr key={field}>
+                              <td className="px-3 py-2 font-medium text-neutral-700">
+                                {FIELD_LABEL[field] ?? field}
+                              </td>
+                              <td className="px-3 py-2 text-neutral-500">
+                                {formatFieldValue(product ? (product as Record<string, unknown>)[field] : undefined)}
+                              </td>
+                              <td className="px-3 py-2 font-medium text-terracotta-700">
+                                {formatFieldValue(value)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <form action={approveEditRequest}>
+                        <input type="hidden" name="requestId" value={r.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+                        >
+                          Approve
+                        </button>
+                      </form>
+                      <form action={rejectEditRequest}>
+                        <input type="hidden" name="requestId" value={r.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:border-red-300 hover:text-red-600"
+                        >
+                          Reject
+                        </button>
+                      </form>
+                    </div>
+                  </div>
                 );
               })}
             </div>

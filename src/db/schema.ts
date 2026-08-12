@@ -6,6 +6,7 @@ import {
   pgEnum,
   jsonb,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", [
@@ -69,6 +70,19 @@ export const verificationStatusEnum = pgEnum("verification_status", [
 
 export const paidStatusEnum = pgEnum("paid_status", ["unpaid", "paid"]);
 
+export const relationTypeEnum = pgEnum("relation_type", [
+  "alternative_to",
+  "compatible_with",
+  "used_with",
+  "similar_to",
+]);
+
+export const editRequestStatusEnum = pgEnum("edit_request_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -119,7 +133,12 @@ export const products = pgTable("products", {
     .default("pending")
     .notNull(),
   pricePerSheet: integer("price_per_sheet"),
+  fireRating: text("fire_rating"),
+  moistureResistance: text("moisture_resistance"),
+  maintenanceLevel: text("maintenance_level"),
+  needsReview: boolean("needs_review").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const cartItems = pgTable("cart_items", {
@@ -142,6 +161,27 @@ export const relatedProducts = pgTable("related_products", {
   relatedProductId: uuid("related_product_id")
     .references(() => products.id, { onDelete: "cascade" })
     .notNull(),
+  relationType: relationTypeEnum("relation_type").default("alternative_to").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const productEditRequests = pgTable("product_edit_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  proposedChanges: jsonb("proposed_changes").$type<Record<string, unknown>>().notNull(),
+  status: editRequestStatusEnum("status").default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+export const productVersions = pgTable("product_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id")
+    .references(() => products.id, { onDelete: "cascade" })
+    .notNull(),
+  snapshot: jsonb("snapshot").$type<Record<string, unknown>>().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -188,6 +228,7 @@ export const moodBoardItems = pgTable("mood_board_items", {
   note: text("note"),
   sortOrder: integer("sort_order").default(0),
   approvalStatus: approvalStatusEnum("approval_status").default("pending").notNull(),
+  productVersionId: uuid("product_version_id").references(() => productVersions.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -208,6 +249,11 @@ export const enquiries = pgTable("enquiries", {
   assignedSalesRepUserId: uuid("assigned_sales_rep_user_id").references(() => users.id),
   lastContactedAt: timestamp("last_contacted_at"),
   paidStatus: paidStatusEnum("paid_status").default("unpaid").notNull(),
+  quotedPrice: integer("quoted_price"),
+  quotedDeliveryDays: integer("quoted_delivery_days"),
+  freightCost: integer("freight_cost"),
+  paymentTerms: text("payment_terms"),
+  validUntil: timestamp("valid_until"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -220,6 +266,7 @@ export const enquiryItems = pgTable("enquiry_items", {
     .references(() => products.id)
     .notNull(),
   quantity: integer("quantity").default(1),
+  productVersionId: uuid("product_version_id").references(() => productVersions.id),
 });
 
 export const distributorInventory = pgTable("distributor_inventory", {

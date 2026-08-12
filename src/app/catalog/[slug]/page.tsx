@@ -84,22 +84,52 @@ export default async function ProductDetailPage({
   const relatedLinks = await db.query.relatedProducts.findMany({
     where: (r, { eq }) => eq(r.productId, product.id),
   });
-  let alternatives = relatedLinks.length
-    ? await db.query.products.findMany({
-        where: (p, { inArray }) =>
-          inArray(p.id, relatedLinks.map((r) => r.relatedProductId)),
-      })
-    : [];
-  if (alternatives.length < 3 && product.category) {
-    const excludeIds = new Set([product.id, ...alternatives.map((a) => a.id)]);
+  const relatedProductsById = relatedLinks.length
+    ? new Map(
+        (
+          await db.query.products.findMany({
+            where: (p, { inArray }) =>
+              inArray(p.id, relatedLinks.map((r) => r.relatedProductId)),
+          })
+        ).map((p) => [p.id, p])
+      )
+    : new Map<string, Awaited<ReturnType<typeof db.query.products.findFirst>>>();
+
+  const RELATION_GROUPS = [
+    { type: "alternative_to" as const, label: "Alternatives" },
+    { type: "compatible_with" as const, label: "Compatible with" },
+    { type: "used_with" as const, label: "Used with" },
+    { type: "similar_to" as const, label: "Similar to" },
+  ];
+
+  const relatedGroups = RELATION_GROUPS.map((group) => ({
+    ...group,
+    products: relatedLinks
+      .filter((r) => r.relationType === group.type)
+      .map((r) => relatedProductsById.get(r.relatedProductId))
+      .filter((p): p is NonNullable<typeof p> => !!p),
+  }));
+
+  const alternativesGroup = relatedGroups.find((g) => g.type === "alternative_to")!;
+  if (alternativesGroup.products.length < 3 && product.category) {
+    const excludeIds = new Set([
+      product.id,
+      ...relatedGroups.flatMap((g) => g.products.map((p) => p.id)),
+    ]);
     const fallback = await db.query.products.findMany({
       where: (p, { eq }) => eq(p.category, product.category!),
       limit: 5 + excludeIds.size,
     });
-    const fill = fallback.filter((p) => !excludeIds.has(p.id)).slice(0, 5 - alternatives.length);
-    alternatives = [...alternatives, ...fill];
+    const fill = fallback
+      .filter((p) => !excludeIds.has(p.id))
+      .slice(0, 5 - alternativesGroup.products.length);
+    alternativesGroup.products = [...alternativesGroup.products, ...fill];
   }
-  alternatives = alternatives.slice(0, 5);
+
+  for (const group of relatedGroups) {
+    group.products = group.products.slice(0, 5);
+  }
+  const hasAnyAlternatives = relatedGroups.some((g) => g.products.length > 0);
 
   const specs: [string, string | null][] = [
     ["Code", product.code],
@@ -169,6 +199,9 @@ export default async function ProductDetailPage({
                 </div>
               ))}
           </dl>
+          <p className="mt-2 text-xs text-neutral-400">
+            Last updated {new Date(product.updatedAt).toLocaleDateString()}
+          </p>
 
           {territoryContact && (
             <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
@@ -272,24 +305,33 @@ export default async function ProductDetailPage({
         </div>
       </div>
 
-      {alternatives.length > 0 && (
+      {hasAnyAlternatives && (
         <details className="mt-10">
           <summary className="w-fit cursor-pointer list-none rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600">
             Find me an alternative
           </summary>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {alternatives.map((alt) => (
-              <ProductCard
-                key={alt.id}
-                slug={alt.slug}
-                name={alt.name}
-                code={alt.code}
-                imageUrl={alt.imageUrl}
-                collection={alt.collection}
-                verificationStatus={alt.verificationStatus}
-                pricePerSheet={alt.pricePerSheet}
-              />
-            ))}
+          <div className="mt-4 flex flex-col gap-6">
+            {relatedGroups
+              .filter((group) => group.products.length > 0)
+              .map((group) => (
+                <div key={group.type}>
+                  <h3 className="mb-3 text-sm font-medium text-neutral-700">{group.label}</h3>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                    {group.products.map((alt) => (
+                      <ProductCard
+                        key={alt.id}
+                        slug={alt.slug}
+                        name={alt.name}
+                        code={alt.code}
+                        imageUrl={alt.imageUrl}
+                        collection={alt.collection}
+                        verificationStatus={alt.verificationStatus}
+                        pricePerSheet={alt.pricePerSheet}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
           </div>
         </details>
       )}
