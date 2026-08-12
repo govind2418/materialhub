@@ -174,6 +174,12 @@ export default async function ProductDetailPage({
     ["Flexibility", product.flexibility],
     ["Panel sizes", product.panelSizes?.join(", ") ?? null],
     ["Certifications", product.certifications?.join(", ") ?? null],
+    ["FSC status", product.fscStatus],
+    [
+      "Recycled content",
+      product.recycledContentPercent != null ? `${product.recycledContentPercent}%` : null,
+    ],
+    ["VOC rating", product.vocRating],
   ];
 
   async function addAction() {

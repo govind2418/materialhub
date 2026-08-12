@@ -51,6 +51,12 @@ export async function createProduct(formData: FormData): Promise<void> {
   const fireRating = String(formData.get("fireRating") ?? "").trim() || null;
   const moistureResistance = String(formData.get("moistureResistance") ?? "").trim() || null;
   const maintenanceLevel = String(formData.get("maintenanceLevel") ?? "").trim() || null;
+  const fscStatus = String(formData.get("fscStatus") ?? "").trim() || null;
+  const recycledContentPercentRaw = String(formData.get("recycledContentPercent") ?? "").trim();
+  const recycledContentPercent = recycledContentPercentRaw
+    ? Number.parseInt(recycledContentPercentRaw, 10)
+    : null;
+  const vocRating = String(formData.get("vocRating") ?? "").trim() || null;
 
   const file = formData.get("image") as File | null;
   let imageUrl = "/products/placeholder.png";
@@ -84,6 +90,9 @@ export async function createProduct(formData: FormData): Promise<void> {
     fireRating,
     moistureResistance,
     maintenanceLevel,
+    fscStatus,
+    recycledContentPercent,
+    vocRating,
   });
 
   revalidatePath("/manufacturer");
@@ -103,6 +112,9 @@ const EDITABLE_FIELDS = [
   "fireRating",
   "moistureResistance",
   "maintenanceLevel",
+  "fscStatus",
+  "recycledContentPercent",
+  "vocRating",
 ] as const;
 
 export async function updateProduct(formData: FormData): Promise<void> {
@@ -140,6 +152,11 @@ export async function updateProduct(formData: FormData): Promise<void> {
     fireRating: String(formData.get("fireRating") ?? "").trim() || null,
     moistureResistance: String(formData.get("moistureResistance") ?? "").trim() || null,
     maintenanceLevel: String(formData.get("maintenanceLevel") ?? "").trim() || null,
+    fscStatus: String(formData.get("fscStatus") ?? "").trim() || null,
+    recycledContentPercent: String(formData.get("recycledContentPercent") ?? "").trim()
+      ? Number.parseInt(String(formData.get("recycledContentPercent")).trim(), 10)
+      : null,
+    vocRating: String(formData.get("vocRating") ?? "").trim() || null,
   };
 
   const changedFields: Record<string, unknown> = {};

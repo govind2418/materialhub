@@ -6,7 +6,15 @@ import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
-import { approveEditRequest, deleteProjectReferenceAdmin, rejectEditRequest, togglePaidStatus } from "./actions";
+import {
+  approveEditRequest,
+  createGuide,
+  deleteGuide,
+  deleteProjectReferenceAdmin,
+  rejectEditRequest,
+  toggleGuidePublished,
+  togglePaidStatus,
+} from "./actions";
 
 const FIELD_LABEL: Record<string, string> = {
   name: "Name",
@@ -83,6 +91,8 @@ export default async function AdminPage({
       (referenceProductCountAdmin.get(link.projectReferenceId) ?? 0) + 1
     );
   }
+
+  const allGuides = await db.query.guides.findMany({ orderBy: (g, { desc }) => desc(g.createdAt) });
 
   const productsById = new Map(allProducts.map((p) => [p.id, p]));
   const manufacturersById = new Map(allManufacturers.map((m) => [m.id, m]));
@@ -440,6 +450,86 @@ export default async function AdminPage({
               ))}
             </div>
           )}
+        </section>
+
+        {/* Guides / Material Knowledge Centre */}
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">Guides ({allGuides.length})</h2>
+          <p className="mb-4 text-xs text-neutral-500">
+            Powers the public /learn section. Only published guides are visible there.
+          </p>
+          {allGuides.length === 0 ? (
+            <p className="mb-4 rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No guides yet.
+            </p>
+          ) : (
+            <div className="mb-4 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
+              {allGuides.map((g) => (
+                <div key={g.id} className="flex items-center justify-between gap-4 p-4">
+                  <div>
+                    <p className="text-sm font-medium">{g.title}</p>
+                    <p className="text-xs text-neutral-500">
+                      {g.category ?? "Uncategorized"} · {new Date(g.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                        g.published ? "bg-green-50 text-green-700" : "bg-neutral-100 text-neutral-500"
+                      }`}
+                    >
+                      {g.published ? "Published" : "Draft"}
+                    </span>
+                    <form action={toggleGuidePublished}>
+                      <input type="hidden" name="guideId" value={g.id} />
+                      <button className="text-xs text-neutral-400 hover:text-terracotta-600">
+                        {g.published ? "Unpublish" : "Publish"}
+                      </button>
+                    </form>
+                    <form action={deleteGuide}>
+                      <input type="hidden" name="guideId" value={g.id} />
+                      <button className="text-xs text-neutral-400 hover:text-red-600">Delete</button>
+                    </form>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <form action={createGuide} className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4">
+            <input
+              name="title"
+              required
+              placeholder="Guide title (e.g. Veneer vs laminate)"
+              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="summary"
+              placeholder="One-line summary"
+              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+            />
+            <input
+              name="category"
+              placeholder="Category (optional, e.g. Material basics)"
+              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+            />
+            <textarea
+              name="content"
+              required
+              rows={6}
+              placeholder="Full article content"
+              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="published" className="h-4 w-4" />
+              Publish immediately
+            </label>
+            <button
+              type="submit"
+              className="mt-1 self-start rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
+            >
+              Add guide
+            </button>
+          </form>
         </section>
 
         {/* Manufacturers */}

@@ -12,7 +12,17 @@ type CatalogSearchParams = {
   finish?: string;
   q?: string;
   project?: string;
+  sustainable?: string;
 };
+
+function isSustainable(p: { fscStatus: string | null; recycledContentPercent: number | null; vocRating: string | null }) {
+  return (
+    !!p.fscStatus ||
+    (p.recycledContentPercent ?? 0) > 0 ||
+    p.vocRating === "Low-VOC" ||
+    p.vocRating === "Zero-VOC"
+  );
+}
 
 function buildHref(current: CatalogSearchParams, overrides: CatalogSearchParams) {
   const merged = { ...current, ...overrides };
@@ -29,7 +39,7 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<CatalogSearchParams>;
 }) {
-  const { category, collection, finish, q, project: projectId } = await searchParams;
+  const { category, collection, finish, q, project: projectId, sustainable } = await searchParams;
 
   const allProducts = await db.query.products.findMany({
     orderBy: (p, { asc }) => asc(p.name),
@@ -51,6 +61,7 @@ export default async function CatalogPage({
     if (category && p.category !== category) return false;
     if (collection && p.collection !== collection) return false;
     if (finish && p.finish !== finish) return false;
+    if (sustainable && !isSustainable(p)) return false;
     if (query) {
       const haystack = [p.name, p.code, p.category, p.finish, p.collection]
         .filter(Boolean)
@@ -61,7 +72,7 @@ export default async function CatalogPage({
     return true;
   });
 
-  const current: CatalogSearchParams = { category, collection, finish, q, project: projectId };
+  const current: CatalogSearchParams = { category, collection, finish, q, project: projectId, sustainable };
 
   if (query || category || finish || collection) {
     await db.insert(searchLog).values({
@@ -187,7 +198,7 @@ export default async function CatalogPage({
         )}
 
         {finishes.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {finishes.map((f) => (
               <FilterPill
                 key={f}
@@ -199,6 +210,14 @@ export default async function CatalogPage({
             ))}
           </div>
         )}
+
+        <div className="mb-8 flex flex-wrap gap-2">
+          <FilterPill
+            label="🌱 Sustainable options"
+            active={!!sustainable}
+            href={buildHref(current, { sustainable: sustainable ? undefined : "1" })}
+          />
+        </div>
 
         {filtered.length === 0 ? (
           <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-16 text-center text-sm text-neutral-500">

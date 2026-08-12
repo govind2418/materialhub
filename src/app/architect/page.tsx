@@ -73,7 +73,59 @@ export default async function ArchitectDashboard() {
         groupsByManufacturer.set(product.manufacturerId, list);
       });
 
-      return { project, board, groupsByManufacturer, totalItems: items.length };
+      const validProducts = products.filter((p): p is NonNullable<typeof p> => !!p);
+      const listTotal = validProducts.reduce((sum, p) => sum + (p.pricePerSheet ?? 0), 0);
+
+      const quotedEnquiries = board
+        ? await db.query.enquiries.findMany({
+            where: (e, { and, eq, isNotNull }) => and(eq(e.moodBoardId, board.id), isNotNull(e.quotedPrice)),
+          })
+        : [];
+      const quotedTotal = quotedEnquiries.length > 0
+        ? quotedEnquiries.reduce((sum, e) => sum + (e.quotedPrice ?? 0), 0)
+        : null;
+
+      const effectiveTotal = quotedTotal ?? listTotal;
+      const isOverBudget = project.budget != null && effectiveTotal > project.budget;
+
+      let cheaperAlternatives: { forProduct: string; alternatives: { name: string; slug: string; pricePerSheet: number }[] }[] = [];
+      if (isOverBudget) {
+        const pricedItems = validProducts
+          .filter((p) => p.pricePerSheet != null)
+          .sort((a, b) => (b.pricePerSheet ?? 0) - (a.pricePerSheet ?? 0))
+          .slice(0, 3);
+
+        cheaperAlternatives = await Promise.all(
+          pricedItems.map(async (p) => {
+            const cheaperInCategory = p.category
+              ? await db.query.products.findMany({
+                  where: (alt, { and, eq, lt }) =>
+                    and(eq(alt.category, p.category!), lt(alt.pricePerSheet, p.pricePerSheet!)),
+                  orderBy: (alt, { asc }) => asc(alt.pricePerSheet),
+                  limit: 2,
+                })
+              : [];
+            return {
+              forProduct: p.name,
+              alternatives: cheaperInCategory
+                .filter((a) => a.pricePerSheet != null)
+                .map((a) => ({ name: a.name, slug: a.slug, pricePerSheet: a.pricePerSheet! })),
+            };
+          })
+        );
+        cheaperAlternatives = cheaperAlternatives.filter((c) => c.alternatives.length > 0);
+      }
+
+      return {
+        project,
+        board,
+        groupsByManufacturer,
+        totalItems: items.length,
+        listTotal,
+        quotedTotal,
+        isOverBudget,
+        cheaperAlternatives,
+      };
     })
   );
 
@@ -158,6 +210,13 @@ export default async function ArchitectDashboard() {
             placeholder="Project city (optional)"
             className="w-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
           />
+          <input
+            name="budget"
+            type="number"
+            min="0"
+            placeholder="Budget (₹, optional)"
+            className="w-44 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+          />
           <button
             type="submit"
             className="rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
@@ -189,15 +248,44 @@ export default async function ArchitectDashboard() {
           </p>
         ) : (
           <div className="mt-8 flex flex-col gap-10">
-            {projectSections.map(({ project, board, groupsByManufacturer, totalItems }) => (
+            {projectSections.map(
+              ({
+                project,
+                board,
+                groupsByManufacturer,
+                totalItems,
+                listTotal,
+                quotedTotal,
+                isOverBudget,
+                cheaperAlternatives,
+              }) => (
               <section key={project.id} className="rounded-xl border border-neutral-200 bg-neutral-100 p-5">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">
-                    {project.name}
-                    {project.city && (
-                      <span className="ml-2 text-xs font-normal text-neutral-500">{project.city}</span>
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      {project.name}
+                      {project.city && (
+                        <span className="ml-2 text-xs font-normal text-neutral-500">{project.city}</span>
+                      )}
+                    </h2>
+                    {totalItems > 0 && (
+                      <p className="mt-1 text-xs text-neutral-500">
+                        Estimated cost: ₹{listTotal.toLocaleString("en-IN")}
+                        {quotedTotal != null && ` · Quoted: ₹${quotedTotal.toLocaleString("en-IN")}`}
+                        {project.budget != null && (
+                          <span
+                            className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                              isOverBudget ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+                            }`}
+                          >
+                            {isOverBudget
+                              ? `Over budget by ₹${((quotedTotal ?? listTotal) - project.budget).toLocaleString("en-IN")}`
+                              : "Under budget"}
+                          </span>
+                        )}
+                      </p>
                     )}
-                  </h2>
+                  </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-neutral-500">{totalItems} product{totalItems === 1 ? "" : "s"}</span>
                     <Link
@@ -322,6 +410,29 @@ export default async function ArchitectDashboard() {
                         </form>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {isOverBudget && cheaperAlternatives.length > 0 && (
+                  <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="mb-2 text-sm font-medium text-red-800">
+                      Over budget — cheaper alternatives to consider
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {cheaperAlternatives.map((c) => (
+                        <div key={c.forProduct} className="text-xs text-red-700">
+                          <span className="font-medium">{c.forProduct}:</span>{" "}
+                          {c.alternatives.map((a, i) => (
+                            <span key={a.slug}>
+                              {i > 0 && ", "}
+                              <Link href={`/catalog/${a.slug}`} className="underline hover:text-red-900">
+                                {a.name} (₹{a.pricePerSheet.toLocaleString("en-IN")})
+                              </Link>
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </section>

@@ -31,8 +31,10 @@ export async function createProject(formData: FormData): Promise<void> {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
   const city = String(formData.get("city") ?? "").trim() || null;
+  const budgetRaw = String(formData.get("budget") ?? "").trim();
+  const budget = budgetRaw ? Number.parseInt(budgetRaw, 10) : null;
 
-  await db.insert(projects).values({ architectUserId: user.id, name, city });
+  await db.insert(projects).values({ architectUserId: user.id, name, city, budget });
   revalidatePath("/architect");
 }
 

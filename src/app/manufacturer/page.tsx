@@ -331,6 +331,31 @@ export default async function ManufacturerDashboard() {
                               <option value="Medium">Medium</option>
                               <option value="High">High</option>
                             </select>
+                            <input
+                              name="fscStatus"
+                              defaultValue={p.fscStatus ?? ""}
+                              placeholder="FSC status (e.g. FSC Certified)"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <input
+                              name="recycledContentPercent"
+                              type="number"
+                              min="0"
+                              max="100"
+                              defaultValue={p.recycledContentPercent ?? ""}
+                              placeholder="Recycled content (%)"
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                            />
+                            <select
+                              name="vocRating"
+                              defaultValue={p.vocRating ?? ""}
+                              className="rounded border border-neutral-300 px-2 py-1 text-[11px] text-neutral-700"
+                            >
+                              <option value="">VOC rating — not set</option>
+                              <option value="Zero-VOC">Zero-VOC</option>
+                              <option value="Low-VOC">Low-VOC</option>
+                              <option value="Standard">Standard</option>
+                            </select>
                             <button
                               type="submit"
                               className="mt-1 rounded border border-neutral-300 px-2 py-1 text-[11px] font-medium hover:border-terracotta-400 hover:text-terracotta-600"
@@ -949,6 +974,29 @@ export default async function ManufacturerDashboard() {
                 <option value="Low">Low maintenance</option>
                 <option value="Medium">Medium maintenance</option>
                 <option value="High">High maintenance</option>
+              </select>
+              <input
+                name="fscStatus"
+                placeholder="FSC status (e.g. FSC Certified, FSC Mix)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <input
+                name="recycledContentPercent"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="Recycled content (%)"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <select
+                name="vocRating"
+                defaultValue=""
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-700"
+              >
+                <option value="">VOC rating — not set</option>
+                <option value="Zero-VOC">Zero-VOC</option>
+                <option value="Low-VOC">Low-VOC</option>
+                <option value="Standard">Standard</option>
               </select>
               <input
                 type="file"

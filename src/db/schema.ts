@@ -139,6 +139,9 @@ export const products = pgTable("products", {
   fireRating: text("fire_rating"),
   moistureResistance: text("moisture_resistance"),
   maintenanceLevel: text("maintenance_level"),
+  fscStatus: text("fsc_status"),
+  recycledContentPercent: integer("recycled_content_percent"),
+  vocRating: text("voc_rating"),
   needsReview: boolean("needs_review").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -208,6 +211,7 @@ export const projects = pgTable("projects", {
   city: text("city"),
   shareToken: text("share_token").unique(),
   isPublicPortfolio: boolean("is_public_portfolio").default(false).notNull(),
+  budget: integer("budget"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -325,6 +329,17 @@ export type BoqRow = {
   quantity: number;
   matchedProductId: string | null;
 };
+
+export const guides = pgTable("guides", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  summary: text("summary"),
+  content: text("content").notNull(),
+  category: text("category"),
+  published: boolean("published").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export const searchLog = pgTable("search_log", {
   id: uuid("id").primaryKey().defaultRandom(),

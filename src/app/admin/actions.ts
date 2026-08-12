@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin";
 import { recordProductVersion } from "@/lib/product-versions";
 import { db } from "@/db";
-import { enquiries, products, productEditRequests, projectReferences } from "@/db/schema";
+import { enquiries, products, productEditRequests, projectReferences, guides } from "@/db/schema";
 
 async function requireAdmin() {
   const user = await currentUser();
@@ -92,4 +92,48 @@ export async function deleteProjectReferenceAdmin(formData: FormData): Promise<v
   await db.delete(projectReferences).where(eq(projectReferences.id, referenceId));
   revalidatePath("/admin");
   revalidatePath("/manufacturer");
+}
+
+function slugify(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+export async function createGuide(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const title = String(formData.get("title") ?? "").trim();
+  if (!title) return;
+  const summary = String(formData.get("summary") ?? "").trim() || null;
+  const content = String(formData.get("content") ?? "").trim();
+  if (!content) return;
+  const category = String(formData.get("category") ?? "").trim() || null;
+  const published = formData.get("published") === "on";
+
+  const baseSlug = slugify(title);
+  const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+  await db.insert(guides).values({ slug, title, summary, content, category, published });
+  revalidatePath("/admin");
+  revalidatePath("/learn");
+}
+
+export async function toggleGuidePublished(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const guideId = String(formData.get("guideId"));
+  const guide = await db.query.guides.findFirst({ where: (g, { eq }) => eq(g.id, guideId) });
+  if (!guide) return;
+
+  await db.update(guides).set({ published: !guide.published }).where(eq(guides.id, guideId));
+  revalidatePath("/admin");
+  revalidatePath("/learn");
+}
+
+export async function deleteGuide(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const guideId = String(formData.get("guideId"));
+  await db.delete(guides).where(eq(guides.id, guideId));
+  revalidatePath("/admin");
+  revalidatePath("/learn");
 }
