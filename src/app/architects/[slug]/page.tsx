@@ -1,6 +1,24 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/db";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const architect = await db.query.users.findFirst({
+    where: (u, { and, eq }) => and(eq(u.publicSlug, slug), eq(u.publicProfileEnabled, true)),
+  });
+  if (!architect) return {};
+
+  return {
+    title: architect.name,
+    description: architect.bio ?? `${architect.name}'s portfolio on MaterialOS.`,
+  };
+}
 
 export default async function ArchitectProfilePage({
   params,

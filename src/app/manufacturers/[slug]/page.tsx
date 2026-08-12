@@ -1,9 +1,27 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { ProductCard } from "@/components/product-card";
 import { getResponseTimeStats, formatResponseTime } from "@/lib/manufacturer-reputation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const manufacturer = await db.query.manufacturers.findFirst({
+    where: (m, { eq }) => eq(m.slug, slug),
+  });
+  if (!manufacturer) return {};
+
+  return {
+    title: manufacturer.name,
+    description: manufacturer.description ?? `${manufacturer.name}'s product catalog on MaterialOS.`,
+  };
+}
 
 export default async function ManufacturerProfilePage({
   params,

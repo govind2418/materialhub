@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { ProductCard } from "@/components/product-card";
 import { PhotoSearchButton } from "@/components/photo-search-button";
 import { getCurrentDbUser } from "@/lib/current-user";
@@ -225,9 +226,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-neutral-200 py-8 text-center text-xs text-neutral-400">
-        MaterialOS — built for manufacturers and architects.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

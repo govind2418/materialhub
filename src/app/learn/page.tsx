@@ -1,6 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
+
+export const metadata: Metadata = {
+  title: "Material Knowledge Centre",
+  description: "Guides on materials, finishes, and specification from the MaterialOS team.",
+};
 
 export default async function LearnIndexPage() {
   const publishedGuides = await db.query.guides.findMany({

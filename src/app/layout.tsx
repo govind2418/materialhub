@@ -20,8 +20,26 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "MaterialOS",
-  description: "Discover, source, and connect with material manufacturers.",
+  metadataBase: new URL("https://material-hub-rho.vercel.app"),
+  title: {
+    default: "MaterialOS — Find the exact finish you're picturing",
+    template: "%s — MaterialOS",
+  },
+  description:
+    "MaterialOS connects manufacturers with architects and designers — search visually, build mood boards, and enquire directly with verified material suppliers.",
+  openGraph: {
+    type: "website",
+    siteName: "MaterialOS",
+    title: "MaterialOS — Find the exact finish you're picturing",
+    description:
+      "Search materials visually, build mood boards, and connect directly with verified manufacturers and distributors.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MaterialOS",
+    description:
+      "Search materials visually, build mood boards, and connect directly with verified manufacturers and distributors.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

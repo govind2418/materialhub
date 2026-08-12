@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { products } from "@/db/schema";
@@ -10,6 +11,36 @@ import { ProductCard } from "@/components/product-card";
 import { addToCart } from "@/app/cart/actions";
 import { getCategoryPriceStats } from "@/lib/price-intelligence";
 import { addToMoodBoard, enquireRepresentative, sendEnquiry } from "./actions";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await db.query.products.findFirst({
+    where: (p, { eq }) => eq(p.slug, slug),
+  });
+  if (!product) return {};
+
+  const manufacturer = await db.query.manufacturers.findFirst({
+    where: (m, { eq }) => eq(m.id, product.manufacturerId),
+  });
+
+  const description = [product.category, product.finish, product.woodSpecie, manufacturer?.name]
+    .filter(Boolean)
+    .join(" · ") || `${product.name} on MaterialOS`;
+
+  return {
+    title: product.name,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: [{ url: product.imageUrl }],
+    },
+  };
+}
 
 export default async function ProductDetailPage({
   params,
@@ -187,8 +218,33 @@ export default async function ProductDetailPage({
     await addToMoodBoard(product!.id, projectId);
   }
 
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: product.imageUrl,
+    description: specs
+      .filter(([, v]) => v)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", "),
+    sku: product.code ?? undefined,
+    brand: manufacturer ? { "@type": "Brand", name: manufacturer.name } : undefined,
+    offers: product.pricePerSheet
+      ? {
+          "@type": "Offer",
+          priceCurrency: "INR",
+          price: product.pricePerSheet,
+          availability: "https://schema.org/InStock",
+        }
+      : undefined,
+  };
+
   return (
     <div className="flex min-h-full flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <SiteHeader />
       <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
       <Link

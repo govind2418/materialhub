@@ -1,10 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { searchLog } from "@/db/schema";
 import { SelectableProductGrid } from "@/components/selectable-product-grid";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentDbUser } from "@/lib/current-user";
+
+export const metadata: Metadata = {
+  title: "Catalog",
+  description: "Browse veneers, laminates, and decorative panels from verified manufacturers on MaterialOS.",
+};
 
 type CatalogSearchParams = {
   category?: string;

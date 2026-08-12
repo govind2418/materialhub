@@ -1,7 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const guide = await db.query.guides.findFirst({ where: (g, { eq }) => eq(g.slug, slug) });
+  if (!guide || !guide.published) return {};
+
+  return {
+    title: guide.title,
+    description: guide.summary ?? guide.content.slice(0, 160),
+  };
+}
 
 export default async function GuideDetailPage({
   params,
