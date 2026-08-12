@@ -5,6 +5,8 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
 import { requestRestock } from "./actions";
+import { getUnpaidUpiPayments } from "@/lib/upi-payments";
+import { UpiPaymentBlock } from "@/components/upi-payment-block";
 
 export default async function RetailerDashboard() {
   const user = await getCurrentDbUser();
@@ -23,6 +25,8 @@ export default async function RetailerDashboard() {
   const manufacturersById = new Map(
     (await db.query.manufacturers.findMany()).map((m) => [m.id, m])
   );
+
+  const upiPayments = await getUnpaidUpiPayments(user.id);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -82,6 +86,9 @@ export default async function RetailerDashboard() {
                       {new Date(e.createdAt).toLocaleString()}
                     </p>
                     <EnquiryDetails enquiryId={e.id} />
+                    {upiPayments.has(e.id) && (
+                      <UpiPaymentBlock payment={upiPayments.get(e.id)!} />
+                    )}
                   </div>
                 </details>
               ))}
