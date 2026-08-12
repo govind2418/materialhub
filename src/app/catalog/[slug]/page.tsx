@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { products } from "@/db/schema";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
+import { ProductCard } from "@/components/product-card";
 import { addToMoodBoard, sendEnquiry } from "./actions";
 
 export default async function ProductDetailPage({
@@ -32,6 +33,59 @@ export default async function ProductDetailPage({
 
   const user = await getCurrentDbUser();
   const isArchitect = user?.role === "architect";
+
+  let territoryContact: { name: string; role: string; phone: string | null; email: string } | null = null;
+  if (isArchitect && user) {
+    const recentProject = await db.query.projects.findFirst({
+      where: (p, { eq }) => eq(p.architectUserId, user.id),
+      orderBy: (p, { desc }) => desc(p.createdAt),
+    });
+
+    if (recentProject?.city) {
+      const activeTeam = await db.query.manufacturerTeamMembers.findMany({
+        where: (m, { and, eq }) =>
+          and(eq(m.manufacturerId, product.manufacturerId), eq(m.status, "active")),
+      });
+      const teamUserIds = activeTeam.map((m) => m.userId).filter((id): id is string => !!id);
+      const teamUsers = teamUserIds.length
+        ? await db.query.users.findMany({
+            where: (u, { inArray }) => inArray(u.id, teamUserIds),
+          })
+        : [];
+      const match = teamUsers.find(
+        (u) => u.city?.toLowerCase() === recentProject.city!.toLowerCase()
+      );
+      if (match) {
+        const memberRecord = activeTeam.find((m) => m.userId === match.id);
+        territoryContact = {
+          name: match.name,
+          role: memberRecord?.role === "sales_rep" ? "Sales rep" : "Distributor",
+          phone: match.phone,
+          email: match.email,
+        };
+      }
+    }
+  }
+
+  const relatedLinks = await db.query.relatedProducts.findMany({
+    where: (r, { eq }) => eq(r.productId, product.id),
+  });
+  let alternatives = relatedLinks.length
+    ? await db.query.products.findMany({
+        where: (p, { inArray }) =>
+          inArray(p.id, relatedLinks.map((r) => r.relatedProductId)),
+      })
+    : [];
+  if (alternatives.length < 3 && product.category) {
+    const excludeIds = new Set([product.id, ...alternatives.map((a) => a.id)]);
+    const fallback = await db.query.products.findMany({
+      where: (p, { eq }) => eq(p.category, product.category!),
+      limit: 5 + excludeIds.size,
+    });
+    const fill = fallback.filter((p) => !excludeIds.has(p.id)).slice(0, 5 - alternatives.length);
+    alternatives = [...alternatives, ...fill];
+  }
+  alternatives = alternatives.slice(0, 5);
 
   const specs: [string, string | null][] = [
     ["Code", product.code],
@@ -65,7 +119,14 @@ export default async function ProductDetailPage({
         </div>
 
         <div>
-          <p className="text-sm font-medium text-neutral-500">{manufacturer?.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-neutral-500">{manufacturer?.name}</p>
+            {product.verificationStatus !== "pending" && (
+              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">
+                ✓ {product.verificationStatus === "platform_verified" ? "Platform Verified" : "Manufacturer Verified"}
+              </span>
+            )}
+          </div>
           <h1 className="mt-1 text-2xl font-semibold">{product.name}</h1>
 
           <dl className="mt-6 divide-y divide-neutral-200 border-y border-neutral-200 text-sm">
@@ -78,6 +139,20 @@ export default async function ProductDetailPage({
                 </div>
               ))}
           </dl>
+
+          {territoryContact && (
+            <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+                Your contact for this project
+              </p>
+              <p className="mt-1 font-medium text-neutral-900">
+                {territoryContact.name} · {territoryContact.role}
+              </p>
+              <p className="text-neutral-600">
+                {territoryContact.phone ?? territoryContact.email}
+              </p>
+            </div>
+          )}
 
           {product.installationGuideUrl && (
             <a
@@ -133,6 +208,27 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {alternatives.length > 0 && (
+        <details className="mt-10">
+          <summary className="w-fit cursor-pointer list-none rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600">
+            Find me an alternative
+          </summary>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {alternatives.map((alt) => (
+              <ProductCard
+                key={alt.id}
+                slug={alt.slug}
+                name={alt.name}
+                code={alt.code}
+                imageUrl={alt.imageUrl}
+                collection={alt.collection}
+                verificationStatus={alt.verificationStatus}
+              />
+            ))}
+          </div>
+        </details>
+      )}
       </div>
     </div>
   );

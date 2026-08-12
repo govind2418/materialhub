@@ -132,6 +132,7 @@ export default async function CatalogPage({
                 code: p.code,
                 imageUrl: p.imageUrl,
                 collection: p.collection,
+                verificationStatus: p.verificationStatus,
               }))}
             />
           </>

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
-import { createProject, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
+import { createProject, generateShareLink, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
 import { generateRfq } from "./rfq-actions";
 
 export default async function ArchitectDashboard() {
@@ -96,6 +96,11 @@ export default async function ArchitectDashboard() {
             placeholder="New project name"
             className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
           />
+          <input
+            name="city"
+            placeholder="Project city (optional)"
+            className="w-48 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-terracotta-500 focus:outline-none"
+          />
           <button
             type="submit"
             className="rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
@@ -114,7 +119,12 @@ export default async function ArchitectDashboard() {
             {projectSections.map(({ project, board, groupsByManufacturer, totalItems }) => (
               <section key={project.id} className="rounded-xl border border-neutral-200 bg-neutral-100 p-5">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">{project.name}</h2>
+                  <h2 className="text-lg font-semibold">
+                    {project.name}
+                    {project.city && (
+                      <span className="ml-2 text-xs font-normal text-neutral-500">{project.city}</span>
+                    )}
+                  </h2>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-neutral-500">{totalItems} product{totalItems === 1 ? "" : "s"}</span>
                     {board && totalItems > 0 && (
@@ -125,6 +135,25 @@ export default async function ArchitectDashboard() {
                           className="rounded-full border border-terracotta-500 px-3 py-1.5 text-xs font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
                         >
                           Generate RFQ
+                        </button>
+                      </form>
+                    )}
+                    {project.shareToken ? (
+                      <Link
+                        href={`/share/${project.shareToken}`}
+                        target="_blank"
+                        className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:border-terracotta-400 hover:text-terracotta-600"
+                      >
+                        Client approval link ↗
+                      </Link>
+                    ) : (
+                      <form action={generateShareLink}>
+                        <input type="hidden" name="projectId" value={project.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:border-terracotta-400 hover:text-terracotta-600"
+                        >
+                          Get client approval link
                         </button>
                       </form>
                     )}
@@ -148,6 +177,23 @@ export default async function ArchitectDashboard() {
                             <div key={item.id} className="overflow-hidden rounded-xl border border-neutral-200">
                               <Link href={`/catalog/${p.slug}`} className="relative block aspect-square w-full bg-neutral-100">
                                 <Image src={p.imageUrl} alt={p.name} fill className="object-cover" />
+                                {item.approvalStatus !== "pending" && (
+                                  <span
+                                    className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                      item.approvalStatus === "approved"
+                                        ? "bg-green-500 text-white"
+                                        : item.approvalStatus === "rejected"
+                                          ? "bg-red-500 text-white"
+                                          : "bg-amber-500 text-white"
+                                    }`}
+                                  >
+                                    {item.approvalStatus === "approved"
+                                      ? "Approved"
+                                      : item.approvalStatus === "rejected"
+                                        ? "Rejected"
+                                        : "Alt. requested"}
+                                  </span>
+                                )}
                               </Link>
                               <div className="flex items-center justify-between p-3">
                                 <p className="truncate text-sm font-medium">{p.name}</p>
@@ -240,9 +286,16 @@ export default async function ArchitectDashboard() {
                     </p>
                     {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
                   </div>
-                  <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
-                    {e.status}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {e.type === "sample_request" && e.sampleStatus && (
+                      <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+                        {e.sampleStatus}
+                      </span>
+                    )}
+                    <span className="rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
+                      {e.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

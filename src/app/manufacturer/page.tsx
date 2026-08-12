@@ -5,12 +5,16 @@ import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import {
   assignDistributor,
+  assignLead,
   createProduct,
   deleteProduct,
   inviteTeamMember,
   linkRelatedProduct,
+  markLeadContacted,
   removeTeamMember,
+  toggleProductVerification,
   updateEnquiryStatus,
+  updateSampleStatus,
 } from "./actions";
 
 export default async function ManufacturerDashboard() {
@@ -80,6 +84,17 @@ export default async function ManufacturerDashboard() {
       })
     : [];
 
+  const activeSalesReps = teamMembers.filter(
+    (m) => m.role === "sales_rep" && m.status === "active" && m.userId
+  );
+  const salesRepUsers = activeSalesReps.length
+    ? await db.query.users.findMany({
+        where: (u, { inArray }) =>
+          inArray(u.id, activeSalesReps.map((m) => m.userId!)),
+      })
+    : [];
+  const salesRepUsersById = new Map(salesRepUsers.map((u) => [u.id, u]));
+
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
@@ -113,16 +128,29 @@ export default async function ManufacturerDashboard() {
                     <div key={p.id} className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
                       <div className="relative aspect-square w-full bg-neutral-100">
                         <Image src={p.imageUrl} alt={p.name} fill className="object-cover" />
+                        {p.verificationStatus !== "pending" && (
+                          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-green-700">
+                            ✓ Verified
+                          </span>
+                        )}
                       </div>
                       <div className="p-3">
                         <p className="truncate text-sm font-medium">{p.name}</p>
                         <p className="truncate text-xs text-neutral-500">{p.code}</p>
-                        <form action={deleteProduct} className="mt-2">
-                          <input type="hidden" name="productId" value={p.id} />
-                          <button className="text-xs text-neutral-400 hover:text-red-600">
-                            Delete
-                          </button>
-                        </form>
+                        <div className="mt-2 flex items-center gap-2">
+                          <form action={deleteProduct}>
+                            <input type="hidden" name="productId" value={p.id} />
+                            <button className="text-xs text-neutral-400 hover:text-red-600">
+                              Delete
+                            </button>
+                          </form>
+                          <form action={toggleProductVerification}>
+                            <input type="hidden" name="productId" value={p.id} />
+                            <button className="text-xs text-neutral-400 hover:text-green-700">
+                              {p.verificationStatus === "pending" ? "Mark verified" : "Unmark verified"}
+                            </button>
+                          </form>
+                        </div>
 
                         {related.length > 0 && (
                           <p className="mt-2 text-[11px] text-neutral-500">
@@ -234,31 +262,95 @@ export default async function ManufacturerDashboard() {
             ) : (
               <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
                 {myEnquiries.map((e) => (
-                  <div key={e.id} className="flex items-start justify-between gap-4 p-4">
+                  <div key={e.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
                     <div>
-                      {e.message && <p className="text-sm">{e.message}</p>}
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                        {e.type === "rfq" ? "RFQ" : e.type === "restock" ? "Restock" : "Sample"}
+                      </span>
+                      {e.message && <p className="mt-1 text-sm">{e.message}</p>}
                       <p className="mt-1 text-xs text-neutral-400">
                         {new Date(e.createdAt).toLocaleDateString()}
+                        {e.assignedSalesRepUserId &&
+                          salesRepUsersById.get(e.assignedSalesRepUserId) &&
+                          ` · Assigned to ${salesRepUsersById.get(e.assignedSalesRepUserId)!.name}`}
+                        {e.lastContactedAt &&
+                          ` · Last contacted ${new Date(e.lastContactedAt).toLocaleDateString()}`}
                       </p>
                     </div>
-                    <form action={updateEnquiryStatus} className="flex items-center gap-2">
-                      <input type="hidden" name="enquiryId" value={e.id} />
-                      <select
-                        name="status"
-                        defaultValue={e.status}
-                        className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium"
-                      >
-                        <option value="new">New</option>
-                        <option value="responded">Responded</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                      <button
-                        type="submit"
-                        className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
-                      >
-                        Save
-                      </button>
-                    </form>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {salesRepUsers.length > 0 && (
+                        <form action={assignLead} className="flex items-center gap-2">
+                          <input type="hidden" name="enquiryId" value={e.id} />
+                          <select
+                            name="salesRepUserId"
+                            defaultValue={e.assignedSalesRepUserId ?? ""}
+                            className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium"
+                          >
+                            <option value="">Unassigned</option>
+                            {salesRepUsers.map((rep) => (
+                              <option key={rep.id} value={rep.id}>
+                                {rep.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="submit"
+                            className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                          >
+                            Assign
+                          </button>
+                        </form>
+                      )}
+                      <form action={markLeadContacted}>
+                        <input type="hidden" name="enquiryId" value={e.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                        >
+                          Mark contacted
+                        </button>
+                      </form>
+                      {e.type === "sample_request" && (
+                        <form action={updateSampleStatus} className="flex items-center gap-2">
+                          <input type="hidden" name="enquiryId" value={e.id} />
+                          <select
+                            name="sampleStatus"
+                            defaultValue={e.sampleStatus ?? "requested"}
+                            className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium"
+                          >
+                            <option value="requested">Requested</option>
+                            <option value="dispatched">Dispatched</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                          </select>
+                          <button
+                            type="submit"
+                            className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                          >
+                            Save
+                          </button>
+                        </form>
+                      )}
+                      <form action={updateEnquiryStatus} className="flex items-center gap-2">
+                        <input type="hidden" name="enquiryId" value={e.id} />
+                        <select
+                          name="status"
+                          defaultValue={e.status}
+                          className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium"
+                        >
+                          <option value="new">New</option>
+                          <option value="responded">Responded</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium hover:border-terracotta-400 hover:text-terracotta-600"
+                        >
+                          Save
+                        </button>
+                      </form>
+                    </div>
                   </div>
                 ))}
               </div>

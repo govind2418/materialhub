@@ -24,6 +24,7 @@ export default async function DistributorDashboard() {
     where: (i, { eq }) => eq(i.distributorUserId, user.id),
   });
   const statusByProduct = new Map(inventory.map((i) => [i.productId, i.status]));
+  const quantityByProduct = new Map(inventory.map((i) => [i.productId, i.quantity]));
 
   return (
     <div className="flex min-h-full flex-col">
@@ -37,6 +38,7 @@ export default async function DistributorDashboard() {
         <div className="mt-8 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
           {products.map((p) => {
             const status = statusByProduct.get(p.id) ?? "in_stock";
+            const quantity = quantityByProduct.get(p.id);
             return (
               <div key={p.id} className="flex items-center gap-4 p-4">
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
@@ -48,6 +50,14 @@ export default async function DistributorDashboard() {
                 </div>
                 <form action={updateStockStatus} className="flex items-center gap-2">
                   <input type="hidden" name="productId" value={p.id} />
+                  <input
+                    type="number"
+                    name="quantity"
+                    min="0"
+                    defaultValue={quantity ?? ""}
+                    placeholder="Qty"
+                    className="w-16 rounded-full border border-neutral-300 px-2.5 py-1 text-xs"
+                  />
                   <select
                     name="status"
                     defaultValue={status}

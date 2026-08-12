@@ -7,12 +7,14 @@ export function ProductCard({
   code,
   imageUrl,
   collection,
+  verificationStatus,
 }: {
   slug: string;
   name: string;
   code: string | null;
   imageUrl: string;
   collection: string | null;
+  verificationStatus?: string;
 }) {
   return (
     <Link
@@ -27,6 +29,11 @@ export function ProductCard({
           sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
           className="object-cover transition group-hover:scale-105"
         />
+        {verificationStatus && verificationStatus !== "pending" && (
+          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-green-700">
+            ✓ Verified
+          </span>
+        )}
       </div>
       <div className="p-3">
         <p className="truncate text-sm font-medium text-neutral-900">{name}</p>

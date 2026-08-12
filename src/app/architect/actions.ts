@@ -1,10 +1,28 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { db } from "@/db";
 import { enquiries, enquiryItems, moodBoardItems, projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export async function generateShareLink(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "architect") return;
+
+  const projectId = String(formData.get("projectId"));
+  const project = await db.query.projects.findFirst({
+    where: (p, { eq }) => eq(p.id, projectId),
+  });
+  if (!project || project.architectUserId !== user.id) return;
+  if (project.shareToken) return;
+
+  const token = randomBytes(12).toString("hex");
+  await db.update(projects).set({ shareToken: token }).where(eq(projects.id, projectId));
+
+  revalidatePath("/architect");
+}
 
 export async function createProject(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
@@ -12,8 +30,9 @@ export async function createProject(formData: FormData): Promise<void> {
 
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
+  const city = String(formData.get("city") ?? "").trim() || null;
 
-  await db.insert(projects).values({ architectUserId: user.id, name });
+  await db.insert(projects).values({ architectUserId: user.id, name, city });
   revalidatePath("/architect");
 }
 
@@ -74,6 +93,7 @@ export async function sendBoardEnquiry(formData: FormData): Promise<void> {
       moodBoardId: board.id,
       message,
       type: "sample_request",
+      sampleStatus: "requested",
     })
     .returning();
 

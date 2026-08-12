@@ -116,6 +116,27 @@ export async function assignDistributor(formData: FormData): Promise<void> {
   revalidatePath("/manufacturer");
 }
 
+export async function toggleProductVerification(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const productId = String(formData.get("productId"));
+  const product = await db.query.products.findFirst({
+    where: (p, { eq }) => eq(p.id, productId),
+  });
+  if (!product || product.manufacturerId !== manufacturer.id) return;
+
+  const nextStatus = product.verificationStatus === "pending" ? "manufacturer_verified" : "pending";
+  await db
+    .update(products)
+    .set({ verificationStatus: nextStatus })
+    .where(eq(products.id, productId));
+  revalidatePath("/manufacturer");
+}
+
 export async function deleteProduct(formData: FormData) {
   const user = await getCurrentDbUser();
   if (!user || user.role !== "manufacturer") return;
@@ -194,5 +215,71 @@ export async function updateEnquiryStatus(formData: FormData) {
   if (!enquiry || enquiry.manufacturerId !== manufacturer.id) return;
 
   await db.update(enquiries).set({ status }).where(eq(enquiries.id, enquiryId));
+  revalidatePath("/manufacturer");
+}
+
+export async function updateSampleStatus(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const enquiryId = String(formData.get("enquiryId"));
+  const sampleStatus = String(formData.get("sampleStatus")) as
+    | "requested"
+    | "dispatched"
+    | "delivered"
+    | "approved"
+    | "rejected";
+
+  const enquiry = await db.query.enquiries.findFirst({
+    where: (e, { eq }) => eq(e.id, enquiryId),
+  });
+  if (!enquiry || enquiry.manufacturerId !== manufacturer.id) return;
+
+  await db.update(enquiries).set({ sampleStatus }).where(eq(enquiries.id, enquiryId));
+  revalidatePath("/manufacturer");
+}
+
+export async function assignLead(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const enquiryId = String(formData.get("enquiryId"));
+  const salesRepUserId = String(formData.get("salesRepUserId")) || null;
+
+  const enquiry = await db.query.enquiries.findFirst({
+    where: (e, { eq }) => eq(e.id, enquiryId),
+  });
+  if (!enquiry || enquiry.manufacturerId !== manufacturer.id) return;
+
+  await db
+    .update(enquiries)
+    .set({ assignedSalesRepUserId: salesRepUserId })
+    .where(eq(enquiries.id, enquiryId));
+  revalidatePath("/manufacturer");
+}
+
+export async function markLeadContacted(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "manufacturer") return;
+
+  const manufacturer = await getOwnedManufacturer(user.id);
+  if (!manufacturer) return;
+
+  const enquiryId = String(formData.get("enquiryId"));
+  const enquiry = await db.query.enquiries.findFirst({
+    where: (e, { eq }) => eq(e.id, enquiryId),
+  });
+  if (!enquiry || enquiry.manufacturerId !== manufacturer.id) return;
+
+  await db
+    .update(enquiries)
+    .set({ lastContactedAt: new Date() })
+    .where(eq(enquiries.id, enquiryId));
   revalidatePath("/manufacturer");
 }

@@ -44,6 +44,27 @@ export const teamMemberStatusEnum = pgEnum("team_member_status", [
   "active",
 ]);
 
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "alternative_requested",
+]);
+
+export const sampleStatusEnum = pgEnum("sample_status", [
+  "requested",
+  "dispatched",
+  "delivered",
+  "approved",
+  "rejected",
+]);
+
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "pending",
+  "manufacturer_verified",
+  "platform_verified",
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -90,6 +111,9 @@ export const products = pgTable("products", {
   viewCount: integer("view_count").default(0).notNull(),
   certifications: jsonb("certifications").$type<string[]>(),
   installationGuideUrl: text("installation_guide_url"),
+  verificationStatus: verificationStatusEnum("verification_status")
+    .default("pending")
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -121,6 +145,8 @@ export const projects = pgTable("projects", {
     .references(() => users.id)
     .notNull(),
   name: text("name").notNull(),
+  city: text("city"),
+  shareToken: text("share_token").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -144,6 +170,7 @@ export const moodBoardItems = pgTable("mood_board_items", {
     .notNull(),
   note: text("note"),
   sortOrder: integer("sort_order").default(0),
+  approvalStatus: approvalStatusEnum("approval_status").default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -160,6 +187,9 @@ export const enquiries = pgTable("enquiries", {
   status: enquiryStatusEnum("status").default("new").notNull(),
   type: enquiryTypeEnum("type").default("sample_request").notNull(),
   rfqId: uuid("rfq_id"),
+  sampleStatus: sampleStatusEnum("sample_status"),
+  assignedSalesRepUserId: uuid("assigned_sales_rep_user_id").references(() => users.id),
+  lastContactedAt: timestamp("last_contacted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -182,6 +212,7 @@ export const distributorInventory = pgTable("distributor_inventory", {
     .references(() => products.id)
     .notNull(),
   status: stockStatusEnum("status").default("in_stock").notNull(),
+  quantity: integer("quantity"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 

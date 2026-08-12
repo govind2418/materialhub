@@ -12,6 +12,7 @@ type Product = {
   code: string | null;
   imageUrl: string;
   collection: string | null;
+  verificationStatus?: string;
 };
 
 export function SelectableProductGrid({ products }: { products: Product[] }) {
@@ -59,6 +60,11 @@ export function SelectableProductGrid({ products }: { products: Product[] }) {
                     sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
                     className="object-cover transition group-hover:scale-105"
                   />
+                  {p.verificationStatus && p.verificationStatus !== "pending" && (
+                    <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-green-700">
+                      ✓ Verified
+                    </span>
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="truncate text-sm font-medium text-neutral-900">{p.name}</p>

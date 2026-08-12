@@ -46,6 +46,7 @@ export async function sendEnquiry(formData: FormData): Promise<void> {
       manufacturerId: product.manufacturerId,
       message,
       type: "sample_request",
+      sampleStatus: "requested",
     })
     .returning();
 
