@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { isAdminEmail } from "@/lib/admin";
 import { SiteNav } from "./site-nav";
 
 const DASHBOARD_BY_ROLE: Record<string, string> = {
@@ -25,6 +26,12 @@ export async function SiteHeader() {
     cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
   }
 
+  let isAdmin = false;
+  if (userId) {
+    const clerkUser = await currentUser();
+    isAdmin = isAdminEmail(clerkUser?.emailAddresses[0]?.emailAddress);
+  }
+
   return (
     <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50/90 backdrop-blur">
       <div className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -36,6 +43,7 @@ export async function SiteHeader() {
           dashboardHref={dashboardHref}
           showCart={dbUser?.role === "architect"}
           cartCount={cartCount}
+          showAdmin={isAdmin}
         />
       </div>
     </header>

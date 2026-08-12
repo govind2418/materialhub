@@ -16,11 +16,13 @@ export function SiteNav({
   dashboardHref,
   showCart,
   cartCount,
+  showAdmin,
 }: {
   signedIn: boolean;
   dashboardHref: string;
   showCart?: boolean;
   cartCount?: number;
+  showAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -59,6 +61,11 @@ export function SiteNav({
         ) : (
           <>
             {cartLink}
+            {showAdmin && (
+              <Link href="/admin" className="hover:text-neutral-900">
+                Owner panel
+              </Link>
+            )}
             <Link href={dashboardHref} className="hover:text-neutral-900">
               Dashboard
             </Link>
@@ -128,6 +135,15 @@ export function SiteNav({
                     className="rounded-lg px-2 py-2.5 hover:bg-neutral-100"
                   >
                     Cart{!!cartCount && ` (${cartCount})`}
+                  </Link>
+                )}
+                {showAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-2 py-2.5 hover:bg-neutral-100"
+                  >
+                    Owner panel
                   </Link>
                 )}
                 <Link

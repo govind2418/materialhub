@@ -67,6 +67,8 @@ export const verificationStatusEnum = pgEnum("verification_status", [
   "platform_verified",
 ]);
 
+export const paidStatusEnum = pgEnum("paid_status", ["unpaid", "paid"]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   clerkId: text("clerk_id").notNull().unique(),
@@ -205,6 +207,7 @@ export const enquiries = pgTable("enquiries", {
   sampleStatus: sampleStatusEnum("sample_status"),
   assignedSalesRepUserId: uuid("assigned_sales_rep_user_id").references(() => users.id),
   lastContactedAt: timestamp("last_contacted_at"),
+  paidStatus: paidStatusEnum("paid_status").default("unpaid").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
