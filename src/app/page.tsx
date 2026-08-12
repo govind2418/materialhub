@@ -92,25 +92,27 @@ export default async function Home() {
               search visually, build mood boards, and enquire directly.
             </p>
 
-            <form
-              action="/catalog"
-              method="GET"
-              className="flex w-full max-w-xl flex-wrap items-stretch gap-2"
-            >
-              <input
-                type="text"
-                name="q"
-                placeholder="light oak texture, office"
-                className="min-w-0 flex-1 basis-full rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm focus:border-terracotta-500 focus:outline-none sm:basis-auto"
-              />
-              <button
-                type="submit"
-                className="rounded-full bg-terracotta-500 px-6 py-3 text-sm font-medium text-white hover:bg-terracotta-600"
+            <div className="flex w-full max-w-xl flex-wrap items-stretch gap-2">
+              <form
+                action="/catalog"
+                method="GET"
+                className="flex min-w-0 flex-1 basis-full gap-2 sm:basis-auto"
               >
-                Search
-              </button>
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="light oak texture, office"
+                  className="min-w-0 flex-1 rounded-full border border-neutral-300 bg-white px-5 py-3 text-sm focus:border-terracotta-500 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full bg-terracotta-500 px-6 py-3 text-sm font-medium text-white hover:bg-terracotta-600"
+                >
+                  Search
+                </button>
+              </form>
               <PhotoSearchButton />
-            </form>
+            </div>
 
             <div className="flex flex-wrap gap-3">
               <Link

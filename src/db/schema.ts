@@ -142,6 +142,7 @@ export const products = pgTable("products", {
   fscStatus: text("fsc_status"),
   recycledContentPercent: integer("recycled_content_percent"),
   vocRating: text("voc_rating"),
+  imageSignature: jsonb("image_signature").$type<{ dHash: string; avgColor: [number, number, number] }>(),
   needsReview: boolean("needs_review").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

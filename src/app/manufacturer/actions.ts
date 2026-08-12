@@ -5,6 +5,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { recordProductVersion } from "@/lib/product-versions";
+import { computeImageSignature } from "@/lib/image-similarity";
 import { db } from "@/db";
 import {
   products,
@@ -60,6 +61,7 @@ export async function createProduct(formData: FormData): Promise<void> {
 
   const file = formData.get("image") as File | null;
   let imageUrl = "/products/placeholder.png";
+  let imageSignature: { dHash: string; avgColor: [number, number, number] } | null = null;
 
   if (file && file.size > 0) {
     const bytes = Buffer.from(await file.arrayBuffer());
@@ -69,6 +71,11 @@ export async function createProduct(formData: FormData): Promise<void> {
     await mkdir(uploadDir, { recursive: true });
     await writeFile(path.join(uploadDir, filename), bytes);
     imageUrl = `/uploads/${filename}`;
+    try {
+      imageSignature = await computeImageSignature(bytes);
+    } catch {
+      imageSignature = null;
+    }
   }
 
   const slug = `${manufacturer.slug}-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
@@ -84,6 +91,7 @@ export async function createProduct(formData: FormData): Promise<void> {
     finish,
     panelSizes,
     imageUrl,
+    imageSignature,
     certifications,
     installationGuideUrl,
     pricePerSheet,

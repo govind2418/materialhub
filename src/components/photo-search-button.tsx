@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { searchByPhoto } from "@/app/photo-search/actions";
 
 export function PhotoSearchButton() {
   const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <div className="relative">
@@ -32,11 +34,32 @@ export function PhotoSearchButton() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-2 w-64 rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-lg">
-          <p className="font-medium text-neutral-900">Coming soon</p>
+        <div className="absolute right-0 top-full z-10 mt-2 w-72 rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-lg">
+          <p className="font-medium text-neutral-900">Search by photo</p>
           <p className="mt-1 text-neutral-500">
-            Upload a photo of a material and we&apos;ll find the closest visual matches.
+            Upload a photo of a material and we&apos;ll find the closest visual matches in the
+            catalog.
           </p>
+          <form
+            action={searchByPhoto}
+            onSubmit={() => setSubmitting(true)}
+            className="mt-3 flex flex-col gap-2"
+          >
+            <input
+              type="file"
+              name="photo"
+              accept="image/*"
+              required
+              className="text-xs"
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-terracotta-500 px-3 py-2 text-xs font-medium text-white hover:bg-terracotta-600 disabled:opacity-60"
+            >
+              {submitting ? "Searching…" : "Find matches"}
+            </button>
+          </form>
           <button
             type="button"
             onClick={() => setOpen(false)}
