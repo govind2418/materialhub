@@ -381,3 +381,32 @@ export const boqUploads = pgTable("boq_uploads", {
   rows: jsonb("rows").$type<BoqRow[]>().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export type ExtractedProduct = {
+  name: string;
+  code: string | null;
+  collection: string | null;
+  category: string | null;
+  woodSpecie: string | null;
+  veneerThickness: string | null;
+  base: string | null;
+  finish: string | null;
+  flexibility: string | null;
+  weightPerPanel: string | null;
+  panelSizes: string[] | null;
+  pricePerSheet: number | null;
+  certifications: string[] | null;
+  fireRating: string | null;
+  moistureResistance: string | null;
+  maintenanceLevel: string | null;
+};
+
+export const catalogExtractions = pgTable("catalog_extractions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  manufacturerId: uuid("manufacturer_id")
+    .references(() => manufacturers.id, { onDelete: "cascade" })
+    .notNull(),
+  filename: text("filename"),
+  extractedProducts: jsonb("extracted_products").$type<ExtractedProduct[]>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
