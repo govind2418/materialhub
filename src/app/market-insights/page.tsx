@@ -2,6 +2,9 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { getDemandTrends, getMostShortlistedFinishes, getEmergingCategories } from "@/lib/demand-intelligence";
 
+// Rolling-window demand data — must be computed per-request, not frozen at build time.
+export const dynamic = "force-dynamic";
+
 function InsightCard({
   title,
   emptyLabel,
