@@ -9,6 +9,7 @@ import { EnquiryDetails } from "@/components/enquiry-details";
 import { createProject, generateShareLink, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
 import { generateRfq } from "./rfq-actions";
 import { uploadBoq } from "./boq-actions";
+import { updateProfileSettings, toggleProjectPublic } from "./profile-actions";
 
 export default async function ArchitectDashboard() {
   const user = await getCurrentDbUser();
@@ -100,6 +101,51 @@ export default async function ArchitectDashboard() {
           </div>
         </div>
 
+        <details className="mt-4 rounded-xl border border-neutral-200 bg-white">
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-neutral-700 hover:text-terracotta-600">
+            Public profile {user.publicProfileEnabled ? "(live)" : "(off)"}
+          </summary>
+          <div className="border-t border-neutral-200 p-4">
+            <form action={updateProfileSettings} className="flex flex-col gap-3">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="publicProfileEnabled"
+                  defaultChecked={user.publicProfileEnabled}
+                  className="h-4 w-4"
+                />
+                <span className="text-neutral-700">
+                  Make my profile public (portfolio, material preferences — opt-in, nothing
+                  shows until you enable this and mark projects below)
+                </span>
+              </label>
+              <textarea
+                name="bio"
+                rows={2}
+                defaultValue={user.bio ?? ""}
+                placeholder="Short bio for your public profile"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <button
+                type="submit"
+                className="self-start rounded-lg bg-terracotta-500 px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-600"
+              >
+                Save
+              </button>
+              {user.publicProfileEnabled && user.publicSlug && (
+                <p className="text-xs text-neutral-500">
+                  Live at{" "}
+                  <Link href={`/architects/${user.publicSlug}`} className="text-terracotta-600 underline">
+                    /architects/{user.publicSlug}
+                  </Link>
+                  . Mark individual projects &ldquo;Show in public portfolio&rdquo; below to include
+                  them.
+                </p>
+              )}
+            </form>
+          </div>
+        </details>
+
         <form action={createProject} className="mt-8 flex gap-2">
           <input
             name="name"
@@ -190,6 +236,19 @@ export default async function ArchitectDashboard() {
                         </button>
                       </form>
                     )}
+                    <form action={toggleProjectPublic}>
+                      <input type="hidden" name="projectId" value={project.id} />
+                      <button
+                        type="submit"
+                        className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                          project.isPublicPortfolio
+                            ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                            : "border-neutral-300 text-neutral-600 hover:border-terracotta-400 hover:text-terracotta-600"
+                        }`}
+                      >
+                        {project.isPublicPortfolio ? "✓ In public portfolio" : "Show in public portfolio"}
+                      </button>
+                    </form>
                   </div>
                 </div>
 

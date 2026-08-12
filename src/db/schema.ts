@@ -92,6 +92,9 @@ export const users = pgTable("users", {
   companyName: text("company_name"),
   phone: text("phone"),
   city: text("city"),
+  bio: text("bio"),
+  publicProfileEnabled: boolean("public_profile_enabled").default(false).notNull(),
+  publicSlug: text("public_slug").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -204,6 +207,7 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   city: text("city"),
   shareToken: text("share_token").unique(),
+  isPublicPortfolio: boolean("is_public_portfolio").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

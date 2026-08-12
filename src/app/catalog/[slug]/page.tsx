@@ -205,7 +205,14 @@ export default async function ProductDetailPage({
 
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-neutral-500">{manufacturer?.name}</p>
+            {manufacturer && (
+              <Link
+                href={`/manufacturers/${manufacturer.slug}`}
+                className="text-sm font-medium text-neutral-500 hover:text-terracotta-600"
+              >
+                {manufacturer.name}
+              </Link>
+            )}
             {product.verificationStatus !== "pending" && (
               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">
                 ✓ {product.verificationStatus === "platform_verified" ? "Platform Verified" : "Manufacturer Verified"}
