@@ -97,7 +97,7 @@ export async function submitCartOrder(): Promise<void> {
 
     await db
       .insert(enquiryItems)
-      .values(lines.map((l) => ({ enquiryId: enquiry.id, productId: l.productId })));
+      .values(lines.map((l) => ({ enquiryId: enquiry.id, productId: l.productId, quantity: l.quantity })));
   }
 
   await db.delete(cartItems).where(eq(cartItems.userId, user.id));

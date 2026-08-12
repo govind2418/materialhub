@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { SiteHeader } from "@/components/site-header";
+import { EnquiryDetails } from "@/components/enquiry-details";
 import { markLeadContacted, updateLeadStatus, updateSampleStatus } from "./actions";
 
 export default async function SalesRepDashboard() {
@@ -43,6 +44,14 @@ export default async function SalesRepDashboard() {
                       {e.lastContactedAt &&
                         ` · Last contacted ${new Date(e.lastContactedAt).toLocaleDateString()}`}
                     </p>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs font-medium text-terracotta-600 hover:text-terracotta-700">
+                        View details
+                      </summary>
+                      <div className="mt-2 max-w-md rounded-lg bg-neutral-50 p-3">
+                        <EnquiryDetails enquiryId={e.id} />
+                      </div>
+                    </details>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <form action={markLeadContacted}>

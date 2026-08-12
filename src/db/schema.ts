@@ -216,6 +216,7 @@ export const enquiryItems = pgTable("enquiry_items", {
   productId: uuid("product_id")
     .references(() => products.id)
     .notNull(),
+  quantity: integer("quantity").default(1),
 });
 
 export const distributorInventory = pgTable("distributor_inventory", {

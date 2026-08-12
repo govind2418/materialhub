@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
+import { EnquiryDetails } from "@/components/enquiry-details";
 import { requestRestock } from "./actions";
 
 export default async function RetailerDashboard() {
@@ -64,17 +65,25 @@ export default async function RetailerDashboard() {
           ) : (
             <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
               {myRequests.map((e) => (
-                <div key={e.id} className="flex items-start justify-between gap-4 p-4">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {manufacturersById.get(e.manufacturerId)?.name}
+                <details key={e.id} className="p-4">
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {manufacturersById.get(e.manufacturerId)?.name}
+                      </p>
+                      {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
+                    </div>
+                    <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
+                      {e.status}
+                    </span>
+                  </summary>
+                  <div className="mt-3 rounded-lg bg-neutral-50 p-3">
+                    <p className="mb-2 text-xs text-neutral-400">
+                      {new Date(e.createdAt).toLocaleString()}
                     </p>
-                    {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
+                    <EnquiryDetails enquiryId={e.id} />
                   </div>
-                  <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
-                    {e.status}
-                  </span>
-                </div>
+                </details>
               ))}
             </div>
           )}

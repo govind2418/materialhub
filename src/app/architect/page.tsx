@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { enquiryTypeLabel } from "@/lib/enquiry-labels";
 import { SiteHeader } from "@/components/site-header";
+import { EnquiryDetails } from "@/components/enquiry-details";
 import { createProject, generateShareLink, removeFromMoodBoard, sendBoardEnquiry } from "./actions";
 import { generateRfq } from "./rfq-actions";
 
@@ -265,14 +266,23 @@ export default async function ArchitectDashboard() {
                   </p>
                   <div className="mt-2 divide-y divide-neutral-100">
                     {group.map((e) => (
-                      <div key={e.id} className="flex items-center justify-between py-1.5">
-                        <span className="text-sm text-neutral-700">
-                          {manufacturersById.get(e.manufacturerId)?.name}
-                        </span>
-                        <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
-                          {e.status}
-                        </span>
-                      </div>
+                      <details key={e.id} className="py-1.5">
+                        <summary className="flex cursor-pointer list-none items-center justify-between">
+                          <span className="text-sm text-neutral-700">
+                            {manufacturersById.get(e.manufacturerId)?.name}
+                          </span>
+                          <span className="shrink-0 rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
+                            {e.status}
+                          </span>
+                        </summary>
+                        <div className="mt-2 rounded-lg bg-neutral-50 p-3">
+                          {e.message && <p className="mb-2 text-sm text-neutral-600">{e.message}</p>}
+                          <p className="mb-2 text-xs text-neutral-400">
+                            {new Date(e.createdAt).toLocaleString()}
+                          </p>
+                          <EnquiryDetails enquiryId={e.id} />
+                        </div>
+                      </details>
                     ))}
                   </div>
                 </div>
@@ -290,27 +300,35 @@ export default async function ArchitectDashboard() {
           ) : (
             <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
               {standaloneEnquiries.map((e) => (
-                <div key={e.id} className="flex items-start justify-between gap-4 p-4">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {manufacturersById.get(e.manufacturerId)?.name}
-                      <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
-                        {enquiryTypeLabel(e.type)}
+                <details key={e.id} className="p-4">
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {manufacturersById.get(e.manufacturerId)?.name}
+                        <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500">
+                          {enquiryTypeLabel(e.type)}
+                        </span>
+                      </p>
+                      {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {e.type === "sample_request" && e.sampleStatus && (
+                        <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+                          {e.sampleStatus}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
+                        {e.status}
                       </span>
+                    </div>
+                  </summary>
+                  <div className="mt-3 rounded-lg bg-neutral-50 p-3">
+                    <p className="mb-2 text-xs text-neutral-400">
+                      {new Date(e.createdAt).toLocaleString()}
                     </p>
-                    {e.message && <p className="mt-1 text-sm text-neutral-500">{e.message}</p>}
+                    <EnquiryDetails enquiryId={e.id} />
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {e.type === "sample_request" && e.sampleStatus && (
-                      <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
-                        {e.sampleStatus}
-                      </span>
-                    )}
-                    <span className="rounded-full bg-terracotta-50 px-2.5 py-1 text-xs font-medium text-terracotta-700">
-                      {e.status}
-                    </span>
-                  </div>
-                </div>
+                </details>
               ))}
             </div>
           )}
