@@ -7,11 +7,23 @@ import { db } from "@/db";
 import { enquiries, enquiryItems, moodBoardItems, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function addToMoodBoard(productId: string) {
+export async function addToMoodBoard(productId: string, projectId?: string) {
   const user = await getCurrentDbUser();
   if (!user || user.role !== "architect") return { error: "not-authorized" };
 
-  const project = await getOrCreateActiveProject(user.id);
+  let project;
+  if (projectId) {
+    const requested = await db.query.projects.findFirst({
+      where: (p, { eq }) => eq(p.id, projectId),
+    });
+    if (!requested || requested.architectUserId !== user.id) {
+      return { error: "not-authorized" };
+    }
+    project = requested;
+  } else {
+    project = await getOrCreateActiveProject(user.id);
+  }
+
   const board = await getOrCreateProjectBoard(project.id, user.id);
 
   const existingItem = await db.query.moodBoardItems.findFirst({

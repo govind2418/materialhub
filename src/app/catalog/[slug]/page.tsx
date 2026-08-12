@@ -11,10 +11,13 @@ import { addToMoodBoard, sendEnquiry } from "./actions";
 
 export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ project?: string }>;
 }) {
   const { slug } = await params;
+  const { project: projectId } = await searchParams;
 
   const product = await db.query.products.findFirst({
     where: (p, { eq }) => eq(p.slug, slug),
@@ -33,6 +36,16 @@ export default async function ProductDetailPage({
 
   const user = await getCurrentDbUser();
   const isArchitect = user?.role === "architect";
+
+  let targetProject = null;
+  if (isArchitect && user && projectId) {
+    const requested = await db.query.projects.findFirst({
+      where: (p, { eq }) => eq(p.id, projectId),
+    });
+    if (requested && requested.architectUserId === user.id) {
+      targetProject = requested;
+    }
+  }
 
   let territoryContact: { name: string; role: string; phone: string | null; email: string } | null = null;
   if (isArchitect && user) {
@@ -102,16 +115,25 @@ export default async function ProductDetailPage({
 
   async function addAction() {
     "use server";
-    await addToMoodBoard(product!.id);
+    await addToMoodBoard(product!.id, projectId);
   }
 
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <div className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
-      <Link href="/catalog" className="text-sm text-neutral-500 hover:text-neutral-900">
+      <Link
+        href={targetProject ? `/catalog?project=${targetProject.id}` : "/catalog"}
+        className="text-sm text-neutral-500 hover:text-neutral-900"
+      >
         ← Back to catalog
       </Link>
+
+      {targetProject && (
+        <div className="mt-3 rounded-lg border border-terracotta-200 bg-terracotta-50 px-4 py-2.5 text-sm text-terracotta-700">
+          Adding to project: <span className="font-medium">{targetProject.name}</span>
+        </div>
+      )}
 
       <div className="mt-4 grid gap-10 md:grid-cols-2">
         <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-neutral-100">
@@ -173,7 +195,7 @@ export default async function ProductDetailPage({
                     type="submit"
                     className="w-full rounded-lg border border-terracotta-500 px-4 py-2.5 text-sm font-medium text-terracotta-700 hover:bg-terracotta-500 hover:text-white"
                   >
-                    Add to Mood Board
+                    {targetProject ? `Add to "${targetProject.name}"` : "Add to Mood Board"}
                   </button>
                 </form>
 

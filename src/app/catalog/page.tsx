@@ -2,12 +2,14 @@ import Link from "next/link";
 import { db } from "@/db";
 import { SelectableProductGrid } from "@/components/selectable-product-grid";
 import { SiteHeader } from "@/components/site-header";
+import { getCurrentDbUser } from "@/lib/current-user";
 
 type CatalogSearchParams = {
   category?: string;
   collection?: string;
   finish?: string;
   q?: string;
+  project?: string;
 };
 
 function buildHref(current: CatalogSearchParams, overrides: CatalogSearchParams) {
@@ -25,7 +27,7 @@ export default async function CatalogPage({
 }: {
   searchParams: Promise<CatalogSearchParams>;
 }) {
-  const { category, collection, finish, q } = await searchParams;
+  const { category, collection, finish, q, project: projectId } = await searchParams;
 
   const allProducts = await db.query.products.findMany({
     orderBy: (p, { asc }) => asc(p.name),
@@ -57,12 +59,33 @@ export default async function CatalogPage({
     return true;
   });
 
-  const current: CatalogSearchParams = { category, collection, finish, q };
+  const current: CatalogSearchParams = { category, collection, finish, q, project: projectId };
+
+  const user = await getCurrentDbUser();
+  let targetProject = null;
+  if (user?.role === "architect" && projectId) {
+    const requested = await db.query.projects.findFirst({
+      where: (p, { eq }) => eq(p.id, projectId),
+    });
+    if (requested && requested.architectUserId === user.id) {
+      targetProject = requested;
+    }
+  }
 
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
+        {targetProject && (
+          <div className="mb-6 flex items-center justify-between rounded-lg border border-terracotta-200 bg-terracotta-50 px-4 py-2.5 text-sm text-terracotta-700">
+            <span>
+              Browsing to add products to: <span className="font-medium">{targetProject.name}</span>
+            </span>
+            <Link href="/architect" className="font-medium hover:text-terracotta-900">
+              Done, back to project →
+            </Link>
+          </div>
+        )}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold">Catalog</h1>
           <p className="mt-1 text-sm text-neutral-500">
@@ -134,6 +157,7 @@ export default async function CatalogPage({
                 collection: p.collection,
                 verificationStatus: p.verificationStatus,
               }))}
+              projectId={targetProject?.id}
             />
           </>
         )}

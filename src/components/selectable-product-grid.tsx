@@ -15,7 +15,13 @@ type Product = {
   verificationStatus?: string;
 };
 
-export function SelectableProductGrid({ products }: { products: Product[] }) {
+export function SelectableProductGrid({
+  products,
+  projectId,
+}: {
+  products: Product[];
+  projectId?: string;
+}) {
   const [selected, setSelected] = useState<string[]>([]);
   const router = useRouter();
 
@@ -51,7 +57,10 @@ export function SelectableProductGrid({ products }: { products: Product[] }) {
               >
                 {isSelected ? "✓" : ""}
               </button>
-              <Link href={`/catalog/${p.slug}`} className="block">
+              <Link
+                href={projectId ? `/catalog/${p.slug}?project=${projectId}` : `/catalog/${p.slug}`}
+                className="block"
+              >
                 <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
                   <Image
                     src={p.imageUrl}
