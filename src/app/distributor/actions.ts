@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { db } from "@/db";
-import { distributorInventory } from "@/db/schema";
+import { distributorInventory, orderAllocations } from "@/db/schema";
 
 export async function updateStockStatus(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
@@ -38,4 +38,25 @@ export async function updateStockStatus(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/distributor");
+}
+
+export async function updateAllocationStatus(formData: FormData): Promise<void> {
+  const user = await getCurrentDbUser();
+  if (!user || user.role !== "distributor") return;
+
+  const allocationId = String(formData.get("allocationId"));
+  const status = String(formData.get("status")) as
+    | "pending"
+    | "confirmed"
+    | "dispatched"
+    | "delivered";
+
+  const allocation = await db.query.orderAllocations.findFirst({
+    where: (a, { eq }) => eq(a.id, allocationId),
+  });
+  if (!allocation || allocation.distributorUserId !== user.id) return;
+
+  await db.update(orderAllocations).set({ status }).where(eq(orderAllocations.id, allocationId));
+  revalidatePath("/distributor");
+  revalidatePath("/architect");
 }

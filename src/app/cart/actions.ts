@@ -5,8 +5,9 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getCurrentProductVersionId } from "@/lib/product-versions";
+import { allocateQuantityToDistributors } from "@/lib/procurement";
 import { db } from "@/db";
-import { cartItems, enquiries, enquiryItems } from "@/db/schema";
+import { cartItems, enquiries, enquiryItems, orderAllocations } from "@/db/schema";
 
 export async function addToCart(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
@@ -104,10 +105,41 @@ export async function submitCartOrder(): Promise<void> {
         productVersionId: await getCurrentProductVersionId(l.productId),
       }))
     );
-    await db.insert(enquiryItems).values(lineValues);
+    const insertedItems = await db.insert(enquiryItems).values(lineValues).returning();
+
+    // Consolidated procurement: split each line item's quantity across whichever
+    // distributors carry stock (highest stock first), so the architect still sees
+    // one order while fulfillment happens behind the scenes as N sub-orders.
+    let totalUnallocated = 0;
+    for (const item of insertedItems) {
+      const { allocations, unallocated } = await allocateQuantityToDistributors(
+        item.productId,
+        item.quantity ?? 1
+      );
+      if (allocations.length > 0) {
+        await db.insert(orderAllocations).values(
+          allocations.map((a) => ({
+            enquiryItemId: item.id,
+            distributorUserId: a.distributorUserId,
+            quantity: a.quantity,
+          }))
+        );
+      }
+      totalUnallocated += unallocated;
+    }
+
+    if (totalUnallocated > 0) {
+      await db
+        .update(enquiries)
+        .set({
+          message: `Order request: ${lines.length} product${lines.length > 1 ? "s" : ""} from cart. Note: ${totalUnallocated} unit(s) couldn't be matched to a distributor's known stock — you'll need to source those directly.`,
+        })
+        .where(eq(enquiries.id, enquiry.id));
+    }
   }
 
   await db.delete(cartItems).where(eq(cartItems.userId, user.id));
   revalidatePath("/cart");
   revalidatePath("/architect");
+  revalidatePath("/distributor");
 }

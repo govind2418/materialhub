@@ -62,6 +62,13 @@ export const sampleStatusEnum = pgEnum("sample_status", [
   "rejected",
 ]);
 
+export const allocationStatusEnum = pgEnum("allocation_status", [
+  "pending",
+  "confirmed",
+  "dispatched",
+  "delivered",
+]);
+
 export const verificationStatusEnum = pgEnum("verification_status", [
   "pending",
   "manufacturer_verified",
@@ -276,6 +283,19 @@ export const enquiryItems = pgTable("enquiry_items", {
     .notNull(),
   quantity: integer("quantity").default(1),
   productVersionId: uuid("product_version_id").references(() => productVersions.id),
+});
+
+export const orderAllocations = pgTable("order_allocations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  enquiryItemId: uuid("enquiry_item_id")
+    .references(() => enquiryItems.id, { onDelete: "cascade" })
+    .notNull(),
+  distributorUserId: uuid("distributor_user_id")
+    .references(() => users.id)
+    .notNull(),
+  quantity: integer("quantity").notNull(),
+  status: allocationStatusEnum("status").default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const distributorInventory = pgTable("distributor_inventory", {
