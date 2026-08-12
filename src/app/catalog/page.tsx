@@ -6,6 +6,7 @@ import { searchLog } from "@/db/schema";
 import { SelectableProductGrid } from "@/components/selectable-product-grid";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentDbUser } from "@/lib/current-user";
+import { searchProducts } from "@/lib/product-search";
 
 export const metadata: Metadata = {
   title: "Catalog",
@@ -63,20 +64,8 @@ export default async function CatalogPage({
 
   const query = q?.trim().toLowerCase();
 
-  const filtered = allProducts.filter((p) => {
-    if (category && p.category !== category) return false;
-    if (collection && p.collection !== collection) return false;
-    if (finish && p.finish !== finish) return false;
-    if (sustainable && !isSustainable(p)) return false;
-    if (query) {
-      const haystack = [p.name, p.code, p.category, p.finish, p.collection]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      if (!haystack.includes(query)) return false;
-    }
-    return true;
-  });
+  let filtered = await searchProducts({ category, collection, finish, query });
+  if (sustainable) filtered = filtered.filter(isSustainable);
 
   const current: CatalogSearchParams = { category, collection, finish, q, project: projectId, sustainable };
 
