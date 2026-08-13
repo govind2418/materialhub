@@ -435,6 +435,20 @@ export const communityMessages = pgTable("community_messages", {
   userId: uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  message: text("message").notNull(),
+  message: text("message"),
+  mediaUrl: text("media_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const directMessages = pgTable("direct_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  senderId: uuid("sender_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  recipientId: uuid("recipient_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  message: text("message"),
+  mediaUrl: text("media_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

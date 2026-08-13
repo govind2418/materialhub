@@ -15,3 +15,16 @@ export async function getLatestMembership(userId: string) {
     orderBy: (m, { desc }) => desc(m.requestedAt),
   });
 }
+
+export async function isUserPremiumActive(userId: string): Promise<boolean> {
+  return isMembershipActive(await getLatestMembership(userId));
+}
+
+export async function getActivePremiumMembers(excludeUserId?: string) {
+  const active = await db.query.premiumMemberships.findMany({
+    where: (m, { eq, and, gt }) => and(eq(m.status, "active"), gt(m.expiresAt, new Date())),
+  });
+  const userIds = [...new Set(active.map((m) => m.userId))].filter((id) => id !== excludeUserId);
+  if (userIds.length === 0) return [];
+  return db.query.users.findMany({ where: (u, { inArray }) => inArray(u.id, userIds) });
+}

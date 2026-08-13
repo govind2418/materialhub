@@ -2,17 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentDbUser } from "@/lib/current-user";
-import { getLatestMembership, isMembershipActive } from "@/lib/premium";
+import { isMembershipActive, isUserPremiumActive, getLatestMembership } from "@/lib/premium";
 import { uploadChatMedia } from "@/lib/chat-media";
 import { db } from "@/db";
-import { communityMessages } from "@/db/schema";
+import { directMessages } from "@/db/schema";
 
-export async function postCommunityMessage(formData: FormData): Promise<void> {
+export async function sendDirectMessage(formData: FormData): Promise<void> {
   const user = await getCurrentDbUser();
   if (!user || user.role !== "architect") return;
 
   const membership = await getLatestMembership(user.id);
   if (!isMembershipActive(membership)) return;
+
+  const recipientId = String(formData.get("recipientId") ?? "");
+  if (!recipientId || recipientId === user.id) return;
+  if (!(await isUserPremiumActive(recipientId))) return;
 
   const message = String(formData.get("message") ?? "").trim();
   if (message.length > 2000) return;
@@ -29,6 +33,11 @@ export async function postCommunityMessage(formData: FormData): Promise<void> {
 
   if (!message && !mediaUrl) return;
 
-  await db.insert(communityMessages).values({ userId: user.id, message: message || null, mediaUrl });
-  revalidatePath("/architect/community");
+  await db.insert(directMessages).values({
+    senderId: user.id,
+    recipientId,
+    message: message || null,
+    mediaUrl,
+  });
+  revalidatePath(`/architect/community/dm/${recipientId}`);
 }
