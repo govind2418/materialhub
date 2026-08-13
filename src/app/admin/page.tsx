@@ -100,9 +100,13 @@ export default async function AdminPage({
     where: (m, { eq }) => eq(m.status, "pending"),
     orderBy: (m, { asc }) => asc(m.requestedAt),
   });
-  const activeMembershipCount = await db.query.premiumMemberships
-    .findMany({ where: (m, { eq }) => eq(m.status, "active") })
-    .then((rows) => rows.length);
+  const activeMemberships = await db.query.premiumMemberships.findMany({
+    where: (m, { eq }) => eq(m.status, "active"),
+    orderBy: (m, { desc }) => desc(m.activatedAt),
+  });
+  const activeMembershipCount = activeMemberships.filter(
+    (m) => m.expiresAt && new Date(m.expiresAt) > new Date()
+  ).length;
 
   const productsById = new Map(allProducts.map((p) => [p.id, p]));
   const manufacturersById = new Map(allManufacturers.map((m) => [m.id, m]));
@@ -542,10 +546,66 @@ export default async function AdminPage({
           </form>
         </section>
 
-        {/* Architect Circle premium memberships */}
+        {/* Architect Circle — active premium members */}
         <section className="mt-14">
           <h2 className="mb-4 text-lg font-semibold">
-            Architect Circle memberships ({activeMembershipCount} active, {pendingMemberships.length} pending)
+            ✦ Architect Circle — premium members ({activeMembershipCount})
+          </h2>
+          {activeMemberships.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No premium members yet.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-amber-200 bg-white">
+              <table className="w-full min-w-[700px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-amber-200 bg-amber-50 text-xs uppercase tracking-wide text-amber-800">
+                    <th className="px-4 py-2.5 font-medium">Architect</th>
+                    <th className="px-4 py-2.5 font-medium">Email</th>
+                    <th className="px-4 py-2.5 font-medium">Activated</th>
+                    <th className="px-4 py-2.5 font-medium">Expires</th>
+                    <th className="px-4 py-2.5 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200">
+                  {activeMemberships.map((m) => {
+                    const member = usersById.get(m.userId);
+                    const stillValid = m.expiresAt && new Date(m.expiresAt) > new Date();
+                    const daysLeft = m.expiresAt
+                      ? Math.ceil((new Date(m.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                      : null;
+                    return (
+                      <tr key={m.id}>
+                        <td className="px-4 py-3 font-medium text-neutral-900">{member?.name ?? "Unknown"}</td>
+                        <td className="px-4 py-3 text-neutral-600">{member?.email}</td>
+                        <td className="px-4 py-3 text-neutral-600">
+                          {m.activatedAt ? new Date(m.activatedAt).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-neutral-600">
+                          {m.expiresAt ? new Date(m.expiresAt).toLocaleDateString() : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                              stillValid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                            }`}
+                          >
+                            {stillValid ? `Active · ${daysLeft}d left` : "Expired"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* Architect Circle — pending requests */}
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">
+            Architect Circle — pending requests ({pendingMemberships.length})
           </h2>
           {pendingMemberships.length === 0 ? (
             <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
