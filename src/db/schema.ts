@@ -450,5 +450,13 @@ export const directMessages = pgTable("direct_messages", {
     .notNull(),
   message: text("message"),
   mediaUrl: text("media_url"),
+  readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const communityReadState = pgTable("community_read_state", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  lastReadAt: timestamp("last_read_at").defaultNow().notNull(),
 });

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getLatestMembership, isMembershipActive, getActivePremiumMembers } from "@/lib/premium";
+import { getUnreadGroupCount, markGroupRead, getUnreadDmInfo } from "@/lib/unread";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -30,6 +31,11 @@ export default async function CommunityPage({
 
   const activeTab = tab === "direct" ? "direct" : "group";
 
+  const rawUnreadGroupCount = await getUnreadGroupCount(user.id);
+  const unreadDmInfo = await getUnreadDmInfo(user.id);
+  if (activeTab === "group") await markGroupRead(user.id);
+  const groupBadge = activeTab === "group" ? 0 : rawUnreadGroupCount;
+
   const recentMessages = await db.query.communityMessages.findMany({
     orderBy: (m, { desc }) => desc(m.createdAt),
     limit: 100,
@@ -41,7 +47,7 @@ export default async function CommunityPage({
   const authorById = new Map(authors.map((a) => [a.id, a]));
   const messages = [...recentMessages].reverse();
 
-  let dmThreads: { partnerId: string; name: string; company: string | null; preview: string; createdAt: Date }[] = [];
+  let dmThreads: { partnerId: string; name: string; company: string | null; preview: string; createdAt: Date; unread: boolean }[] = [];
   let browseMembers: { id: string; name: string | null; companyName: string | null }[] = [];
 
   if (activeTab === "direct") {
@@ -69,6 +75,7 @@ export default async function CommunityPage({
           company: partner?.companyName ?? null,
           preview: dm.mediaUrl && !dm.message ? "📷 Photo" : (dm.message ?? ""),
           createdAt: dm.createdAt,
+          unread: unreadDmInfo.unreadPartnerIds.has(id),
         };
       })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -97,19 +104,29 @@ export default async function CommunityPage({
         <div className="mt-5 flex gap-1 rounded-full bg-neutral-100 p-1 text-sm font-medium">
           <Link
             href="/architect/community"
-            className={`flex-1 rounded-full px-4 py-2 text-center ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-center ${
               activeTab === "group" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"
             }`}
           >
             Group
+            {groupBadge > 0 && (
+              <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                {groupBadge > 99 ? "99+" : groupBadge}
+              </span>
+            )}
           </Link>
           <Link
             href="/architect/community?tab=direct"
-            className={`flex-1 rounded-full px-4 py-2 text-center ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-center ${
               activeTab === "direct" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500"
             }`}
           >
             Direct messages
+            {unreadDmInfo.total > 0 && (
+              <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                {unreadDmInfo.total > 99 ? "99+" : unreadDmInfo.total}
+              </span>
+            )}
           </Link>
         </div>
 
@@ -204,12 +221,15 @@ export default async function CommunityPage({
                     className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-3 last:border-0 hover:bg-neutral-50"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-neutral-900">{t.name}</p>
-                      <p className="truncate text-xs text-neutral-500">
+                      <p className={`text-sm ${t.unread ? "font-semibold text-neutral-900" : "font-medium text-neutral-900"}`}>
+                        {t.name}
+                      </p>
+                      <p className={`truncate text-xs ${t.unread ? "font-medium text-neutral-700" : "text-neutral-500"}`}>
                         {t.company && `${t.company} · `}
                         {t.preview || "…"}
                       </p>
                     </div>
+                    {t.unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-600" />}
                   </Link>
                 ))}
               </div>

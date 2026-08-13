@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { getLatestMembership, isMembershipActive, isUserPremiumActive } from "@/lib/premium";
+import { markDmThreadRead } from "@/lib/unread";
 import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -43,6 +44,8 @@ export default async function DirectMessagePage({
       ),
     orderBy: (d, { asc }) => asc(d.createdAt),
   });
+
+  await markDmThreadRead(user.id, partnerId);
 
   return (
     <div className="flex min-h-full flex-col">
