@@ -8,6 +8,7 @@ import { products } from "@/db/schema";
 import { getCurrentDbUser } from "@/lib/current-user";
 import { SiteHeader } from "@/components/site-header";
 import { ProductCard } from "@/components/product-card";
+import { WallVisualizer } from "@/components/wall-visualizer";
 import { addToCart } from "@/app/cart/actions";
 import { getCategoryPriceStats } from "@/lib/price-intelligence";
 import { addToMoodBoard, enquireRepresentative, sendEnquiry } from "./actions";
@@ -428,6 +429,15 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      <details className="mt-10">
+        <summary className="w-fit cursor-pointer list-none rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 hover:border-terracotta-400 hover:text-terracotta-600">
+          📷 Visualize on your wall
+        </summary>
+        <div className="mt-4 max-w-xl">
+          <WallVisualizer productImageUrl={product.imageUrl} productName={product.name} />
+        </div>
+      </details>
 
       {featuredIn.length > 0 && (
         <div className="mt-10">
