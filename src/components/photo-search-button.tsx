@@ -34,7 +34,7 @@ export function PhotoSearchButton() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-2 w-72 rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-lg">
+        <div className="absolute left-0 top-full z-10 mt-2 w-[min(18rem,calc(100vw-3rem))] rounded-lg border border-neutral-200 bg-white p-4 text-sm shadow-lg sm:left-auto sm:right-0 sm:w-72">
           <p className="font-medium text-neutral-900">Search by photo</p>
           <p className="mt-1 text-neutral-500">
             Upload a photo of a material and we&apos;ll find the closest visual matches in the
