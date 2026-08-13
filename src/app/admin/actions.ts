@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { isAdminEmail } from "@/lib/admin";
 import { recordProductVersion } from "@/lib/product-versions";
 import { db } from "@/db";
-import { enquiries, products, productEditRequests, projectReferences, guides } from "@/db/schema";
+import { enquiries, products, productEditRequests, projectReferences, guides, premiumMemberships } from "@/db/schema";
 
 async function requireAdmin() {
   const user = await currentUser();
@@ -136,4 +136,40 @@ export async function deleteGuide(formData: FormData): Promise<void> {
   await db.delete(guides).where(eq(guides.id, guideId));
   revalidatePath("/admin");
   revalidatePath("/learn");
+}
+
+export async function activatePremiumMembership(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const membershipId = String(formData.get("membershipId"));
+  const membership = await db.query.premiumMemberships.findFirst({
+    where: (m, { eq }) => eq(m.id, membershipId),
+  });
+  if (!membership || membership.status !== "pending") return;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  await db
+    .update(premiumMemberships)
+    .set({ status: "active", activatedAt: new Date(), expiresAt })
+    .where(eq(premiumMemberships.id, membershipId));
+
+  revalidatePath("/admin");
+  revalidatePath("/architect/premium");
+  revalidatePath("/architect/community");
+}
+
+export async function rejectPremiumMembership(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const membershipId = String(formData.get("membershipId"));
+  const membership = await db.query.premiumMemberships.findFirst({
+    where: (m, { eq }) => eq(m.id, membershipId),
+  });
+  if (!membership || membership.status !== "pending") return;
+
+  await db.update(premiumMemberships).set({ status: "rejected" }).where(eq(premiumMemberships.id, membershipId));
+  revalidatePath("/admin");
+  revalidatePath("/architect/premium");
 }

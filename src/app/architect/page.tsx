@@ -154,6 +154,12 @@ export default async function ArchitectDashboard() {
             >
               Not sure what to pick? Try the decision assistant →
             </Link>
+            <Link
+              href="/architect/premium"
+              className="text-sm font-medium text-amber-700 hover:text-amber-800"
+            >
+              ✦ Architect Circle →
+            </Link>
           </div>
         </div>
 

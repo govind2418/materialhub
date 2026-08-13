@@ -185,6 +185,29 @@ export default async function Home() {
           </div>
         </section>
 
+        <section className="mx-auto max-w-6xl px-6 pb-14">
+          <Link
+            href="/architect/premium"
+            className="group flex flex-col items-start justify-between gap-6 overflow-hidden rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100 p-8 transition hover:border-amber-400 hover:shadow-md sm:flex-row sm:items-center"
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-amber-700">
+                ✦ Introducing Architect Circle
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-neutral-900 sm:text-2xl">
+                A private, verified community — just for architects.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm text-neutral-600">
+                Live discussion with every premium architect on MaterialOS, plus a verified badge
+                on your profile. ₹50,000/month.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-amber-600 px-6 py-3 text-sm font-medium text-white transition group-hover:bg-amber-700">
+              Explore Architect Circle →
+            </span>
+          </Link>
+        </section>
+
         <section className="mx-auto max-w-6xl px-6 py-14">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Browse by category</h2>

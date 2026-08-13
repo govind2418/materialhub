@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { db } from "@/db";
+import { getLatestMembership, isMembershipActive } from "@/lib/premium";
 
 export async function generateMetadata({
   params,
@@ -31,6 +32,9 @@ export default async function ArchitectProfilePage({
     where: (u, { and, eq }) => and(eq(u.publicSlug, slug), eq(u.publicProfileEnabled, true)),
   });
   if (!architect) notFound();
+
+  const membership = await getLatestMembership(architect.id);
+  const isPremium = isMembershipActive(membership);
 
   const publicProjects = await db.query.projects.findMany({
     where: (p, { and, eq }) => and(eq(p.architectUserId, architect.id), eq(p.isPublicPortfolio, true)),
@@ -70,7 +74,14 @@ export default async function ArchitectProfilePage({
     <div className="flex min-h-full flex-col">
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
-        <h1 className="text-2xl font-semibold">{architect.name}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold">{architect.name}</h1>
+          {isPremium && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+              ✦ Architect Circle
+            </span>
+          )}
+        </div>
         {architect.companyName && <p className="mt-1 text-sm text-neutral-500">{architect.companyName}</p>}
         {architect.city && <p className="text-sm text-neutral-500">{architect.city}</p>}
         {architect.bio && <p className="mt-4 text-sm text-neutral-700">{architect.bio}</p>}

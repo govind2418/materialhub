@@ -410,3 +410,31 @@ export const catalogExtractions = pgTable("catalog_extractions", {
   extractedProducts: jsonb("extracted_products").$type<ExtractedProduct[]>().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const premiumMembershipStatusEnum = pgEnum("premium_membership_status", [
+  "pending",
+  "active",
+  "expired",
+  "rejected",
+]);
+
+export const premiumMemberships = pgTable("premium_memberships", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  status: premiumMembershipStatusEnum("status").default("pending").notNull(),
+  amount: integer("amount").default(50000).notNull(),
+  requestedAt: timestamp("requested_at").defaultNow().notNull(),
+  activatedAt: timestamp("activated_at"),
+  expiresAt: timestamp("expires_at"),
+});
+
+export const communityMessages = pgTable("community_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

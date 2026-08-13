@@ -7,11 +7,13 @@ import { db } from "@/db";
 import { SiteHeader } from "@/components/site-header";
 import { EnquiryDetails } from "@/components/enquiry-details";
 import {
+  activatePremiumMembership,
   approveEditRequest,
   createGuide,
   deleteGuide,
   deleteProjectReferenceAdmin,
   rejectEditRequest,
+  rejectPremiumMembership,
   toggleGuidePublished,
   togglePaidStatus,
 } from "./actions";
@@ -93,6 +95,14 @@ export default async function AdminPage({
   }
 
   const allGuides = await db.query.guides.findMany({ orderBy: (g, { desc }) => desc(g.createdAt) });
+
+  const pendingMemberships = await db.query.premiumMemberships.findMany({
+    where: (m, { eq }) => eq(m.status, "pending"),
+    orderBy: (m, { asc }) => asc(m.requestedAt),
+  });
+  const activeMembershipCount = await db.query.premiumMemberships
+    .findMany({ where: (m, { eq }) => eq(m.status, "active") })
+    .then((rows) => rows.length);
 
   const productsById = new Map(allProducts.map((p) => [p.id, p]));
   const manufacturersById = new Map(allManufacturers.map((m) => [m.id, m]));
@@ -530,6 +540,55 @@ export default async function AdminPage({
               Add guide
             </button>
           </form>
+        </section>
+
+        {/* Architect Circle premium memberships */}
+        <section className="mt-14">
+          <h2 className="mb-4 text-lg font-semibold">
+            Architect Circle memberships ({activeMembershipCount} active, {pendingMemberships.length} pending)
+          </h2>
+          {pendingMemberships.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500">
+              No pending membership requests.
+            </p>
+          ) : (
+            <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white">
+              {pendingMemberships.map((m) => {
+                const requester = usersById.get(m.userId);
+                return (
+                  <div key={m.id} className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-medium">{requester?.name ?? "Unknown architect"}</p>
+                      <p className="text-xs text-neutral-500">
+                        {requester?.email} · ₹{m.amount.toLocaleString("en-IN")} · requested{" "}
+                        {new Date(m.requestedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <form action={activatePremiumMembership}>
+                        <input type="hidden" name="membershipId" value={m.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
+                        >
+                          Activate (30 days)
+                        </button>
+                      </form>
+                      <form action={rejectPremiumMembership}>
+                        <input type="hidden" name="membershipId" value={m.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:border-red-300 hover:text-red-600"
+                        >
+                          Reject
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* Manufacturers */}
